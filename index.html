@@ -194,6 +194,14 @@ body{padding-top:34px}
 .lpup{animation:lpU .8s}.lpdn{animation:lpD .8s}
 @keyframes lpU{0%,100%{color:inherit}30%{color:#4f8;text-shadow:0 0 12px #4f8;transform:scale(1.4)}}
 @keyframes lpD{0%,100%{color:inherit}30%{color:#f44;text-shadow:0 0 12px #f44;transform:scale(1.4)}}
+#dtb{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}#dtb button{font-size:12px;padding:4px 6px}
+.gyv{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:65vh;overflow:auto}.gyc{width:100px;transform-origin:top left}.gyc>*{max-width:100%}
+.sdc{display:inline-block;margin:2px;padding:4px 6px;border:1px solid #29d8ff;border-radius:4px;font-size:12px}.sdc.on{background:#29d8ff;color:#000}
+.dst{margin:4px 0;padding:6px;border:1px solid #29d8ff;border-radius:6px}.crv{display:flex;gap:6px;align-items:flex-end;margin-top:4px;font-size:10px;text-align:center}.crv i{display:block;width:14px;background:#29d8ff;margin:auto}
+.setv{text-align:left;line-height:2.2}.ign{border-color:#fd4!important}
+.coin{width:120px;height:120px;margin:20px auto;position:relative;transform-style:preserve-3d;animation:cflip 1.6s ease-out forwards}.coin.t{animation-name:cflipT}
+.coin div{position:absolute;inset:0;border-radius:50%;background:radial-gradient(#ffe680,#c90);display:flex;align-items:center;justify-content:center;font:bold 50px serif;color:#640;backface-visibility:hidden}.coin .cb2{transform:rotateY(180deg)}
+@keyframes cflip{to{transform:rotateY(1800deg)}}@keyframes cflipT{to{transform:rotateY(1980deg)}}
 </style></head><body><div class="wrap">
 <div class="ctl"><button id="spk" onclick="AU.toggle()">&#128264;</button> <input id="vol" type="range" min="0" max="100" style="width:90px;vertical-align:middle" oninput="AU.vol(this.value)"> Turn <b id="turn">1</b>  
 <span class="ph" id="ph"></span></div>
@@ -544,7 +552,7 @@ function trapOnAttack(d,a,az){var A=S[a].z[az];if(!A)return false;var ready=func
 function dmg(p,v){S[p].LP=Math.max(0,S[p].LP-v)}
 function fight(p,az,tz){var o=oth(p),A=S[p].z[az];A.at=S.turn;if(trapOnAttack(o,p,az))return;
  if(!tz){dmg(o,+A.atk);L(p+' '+A.name+' attacks directly: '+A.atk);return}
- var D=S[o].z[tz];if(D.pos=='DOWN'){D.pos='DEF';L(o+' '+D.name+' flipped')}var pa=+A.atk;
+ var D=S[o].z[tz];if(!D||!S[p].z[az])return;if(D.pos=='DOWN'){D.pos='DEF';L(o+' '+D.name+' flipped')}var pa=+A.atk;
  if(D.pos=='ATK'){var da=+D.atk;if(pa>da){dmg(o,pa-da);kill(o,tz);L(A.name+' destroys '+D.name)}else if(pa<da){dmg(p,da-pa);kill(p,az);L(D.name+' destroys '+A.name)}else{kill(p,az);kill(o,tz);L(A.name+' and '+D.name+' destroy each other')}}
  else{var dd=+D.def;if(pa>dd){kill(o,tz);L(A.name+' destroys DEF '+D.name)}else if(pa<dd){dmg(p,dd-pa);L(A.name+' bounces off '+D.name)}}}
 function aiTurn(p){var o=oth(p),T=S.turn,f=S[p];if(!f.hand)setupSide(p,AIDECK);
@@ -961,7 +969,7 @@ var _lo13=legalOpts;legalOpts=function(p,n){var O=_lo13(p,n),c=cd(n),ty=c[1]||''
  if(/Spell/.test(ty)){
   if(/Ritual/.test(ty)){var rm=ritMonsFor(n),inH=rm.filter(function(m){return hIdx(m)>=0})[0];var lv2=inH?lvl(inH):0,pool2=mons('ME').reduce(function(a,z){return a+lvl(S.ME.z[z].name)},0)+M.hand.reduce(function(a,h){return a+(h!=inH&&isMon(h)?lvl(h):0)},0);
    O=O.filter(function(o){return o.k!='SA'});O.unshift({t:'Ritual Summon',s:inH?'Summon '+inH+' • tribute Levels ≥ '+lv2:'',dis:why||(!inH?'Needs '+(rm[0]||'its Ritual Monster')+' in your hand':'')||(!fs?'Spell & Trap Zones are full':'')||(pool2<lv2?'Tribute Levels available '+pool2+', need '+lv2:''),k:'RX',mon:inH,sp:n})}
-  if(lc(n)=='polymerization'){var any=(M.fus||[]).some(function(f){var pl=fusPlan(f,hIdx(n));return pl.mats&&!pl.miss.length});
+  if(isPolyLike(n)){var any=(M.fus||[]).some(function(f){var pl=fusPlan(f,hIdx(n));return pl.mats&&!pl.miss.length});
    O=O.filter(function(o){return o.k!='SA'});O.unshift({t:'Fusion Summon',s:'Pick a Fusion Monster from your Extra Deck',dis:why||(!(M.fus||[]).length?'Your Extra Deck is empty':'')||(!fs?'Spell & Trap Zones are full':'')||(!any?'No Extra Deck monster has its exact materials in your hand/field':''),k:'FU'})}
   if(lc(n)=='monster reborn'){var g=rebList();O=O.filter(function(o){return o.k!='SA'});O.unshift({t:'Activate: Special Summon from a GY',s:'Choose a monster in either Graveyard',dis:why||(!fs?'Spell & Trap Zones are full':'')||(!free('ME','M')?'Monster Zones are full':'')||(!g.length?'No monster in either Graveyard can be revived':''),k:'MR'})}
   if(/Equip/.test(ty)){var tg=eqTargets(n);O.forEach(function(o){if(o.k=='SA'){o.t='Activate & Equip';o.dis=o.dis||(!tg.length?'No face-up monster to equip':'');o.k='EQ'}})}}
@@ -1245,9 +1253,9 @@ cpuTurn=function(){if(typeof QUITT!='undefined'&&Date.now()-QUITT<4000||!duelLiv
  if(!S.OPP.hand)setupSide('OPP',AIDECK);S.phase=0;_drawP15('OPP',1);if(S.OPP.out){L('OPP cannot draw - deck out!');S.OPP.LP=0;save();return}
  L('OPP draws 1 card');oppDrawFx();save();toast(NAMES.OPP+' draws',0);
  setTimeout(function(){if(S.turn!=T)return;S.phase=1;try{ssStandby()}catch(e){}save();setTimeout(function(){if(S.turn!=T)return;
-  SKIPDRAW=1;CPUQ=[];var Q;try{aiTurn('OPP')}finally{SKIPDRAW=0;Q=CPUQ;CPUQ=null}S.OPP.deck=S.OPP.pile.length;S.phase=Q.some(function(e){return e.t=='atk'})?3:2;save();
+  cpuSpells(function(){if(S.turn!=T)return;SKIPDRAW=1;CPUQ=[];var Q;try{aiTurn('OPP')}finally{SKIPDRAW=0;Q=CPUQ;CPUQ=null}S.OPP.deck=S.OPP.pile.length;S.phase=Q.some(function(e){return e.t=='atk'})?3:2;save();
   runQ(Q,function(){BPEND=0;if(S.ME.LP<=0||S.OPP.LP<=0){save();toast(S.ME.LP<=0?NAMES.OPP+' wins!':'You win!',1);return}
-   S.phase=5;save();setTimeout(function(){if(S.turn!=T)return;S.turn++;S.phase=0;save();toast('Your turn',1)},spd(800))})},spd(500))},spd(800))};
+   S.phase=5;save();setTimeout(function(){if(S.turn!=T)return;S.turn++;S.phase=0;save();toast('Your turn',1)},spd(800))})})},spd(500))},spd(800))};
 function runQ(Q,done){var e=Q.shift();if(!e)return done();var nx=function(){save();setTimeout(function(){runQ(Q,done)},spd(450))};
  if(S.ME.LP<=0||S.OPP.LP<=0)return done();
  if(e.t=='sum'){if(!S.OPP.z[e.z]||S.OPP.z[e.z].name!=e.n)return nx();return chainStart({type:'summon',p:'OPP',z:e.z,name:e.n},nx)}
@@ -1287,10 +1295,10 @@ function respond(q){var O=respOpts(q),top=CHAIN.l[CHAIN.l.length-1];
  try{AU.sfx('trap')}catch(e){}
  pmList('Respond? — '+what+(CHAIN.l.length>1?' (chain link '+(CHAIN.l.length+1)+')':''),O.map(function(o){return{t:'Activate '+o.n,s:(o.h?'From hand • ':'Set card • ')+(cd(o.n)[7]||'').slice(0,90),o:o}}).concat([{t:'No response',s:'Let it resolve',none:1}]),function(it){pmClose();if(it.none)return resolveChain();if(activate('ME',it.o))respond('OPP');else resolveChain()})}
 function activate(q,o){var R=o.R;if(R.cost&&!R.cost(q)){if(q=='ME')toast("Can't pay the cost");return false}var z=o.z;
- if(o.h){z=free(q,'S');useH(q,o.n);S[q].z[z]={name:o.n,pos:'UP',atk:'',def:'',st:S.turn,set:S.turn}}else S[q].z[z].pos='UP';
+ if(!o.h&&!S[q].z[z])return false;if(o.h){z=free(q,'S');useH(q,o.n);S[q].z[z]={name:o.n,pos:'UP',atk:'',def:'',st:S.turn,set:S.turn}}else S[q].z[z].pos='UP';
  var idx=CHAIN.l.length;CHAIN.l.push({type:/Trap/.test(cd(o.n)[1])?'trap':'spell',p:q,name:o.n,z:z,res:function(){R.r(q,CHAIN.l[0],idx)}});
  L(q+' activates '+o.n+' (chain link '+(idx+1)+')');try{AU.sfx(/Trap/.test(cd(o.n)[1])?'trap':'spell')}catch(e){}toast((q=='ME'?'You':NAMES.OPP)+' chain '+o.n,0);save();return true}
-function resolveChain(){var C=CHAIN,l=C.l;for(var i=l.length-1;i>=0;i--){var k=l[i];
+function resolveChain(){if(!CHAIN)return;var C=CHAIN,l=C.l;for(var i=l.length-1;i>=0;i--){var k=l[i];
   if(i==0){if(k.neg){L(k.name+' was negated');if(k.type=='spell'&&k.neg0)k.neg0()}else if(k.type=='attack'){if(!k.stop&&S[k.p].z[k.az]&&S[k.p].z[k.az].pos=='ATK'){NOTRAP=1;try{_fight15(k.p,k.az,k.tz&&S[oth(k.p)].z[k.tz]?k.tz:(mons(oth(k.p)).length?null:null))}finally{NOTRAP=0}}else if(k.stop)L('The attack was stopped')}else if(k.res)k.res();continue}
   if(k.neg)L(k.name+' was negated');else{try{k.res()}catch(e){console.error(e)}}if(k.z&&S[k.p].z[k.z]&&S[k.p].z[k.z].name==k.name)toGY(k.p,k.z)}
  CHAIN=null;save();try{render()}catch(e){}if(C.done)C.done()}
@@ -1328,7 +1336,7 @@ function fxBest(list){return list.map(function(z){return z}).sort(function(a,b){
 function fxTg(p,kind,side){var r=[];[oth(p),p].forEach(function(q){if(side=='opp'&&q==p)return;if(side=='own'&&q!=p)return;
  (kind=='M'?mons(q):kind=='S'?STs(q):mons(q).concat(STs(q))).forEach(function(z){if(!(FXSRC&&FXSRC[0]==q&&FXSRC[1]==z))r.push([q,z])})});return kind=='M'?fxBest(r):r}
 function fxDiscard(p,n,cb){var H=hand(p);n=Math.min(n,H.length);if(!n)return cb&&cb();
- if(p!='ME'){for(var i=0;i<n;i++){var w=H.slice().sort(function(a,b){return stScore(a)+(+cd(a)[2]||0)-stScore(b)-(+cd(b)[2]||0)})[0];useH(p,w);S[p].GY.push(w)}L(p+' discards '+n);return cb&&cb()}
+ if(p!='ME'||n>=H.length){for(var i=0;i<n;i++){var w=H.slice().sort(function(a,b){return stScore(a)+(+cd(a)[2]||0)-stScore(b)-(+cd(b)[2]||0)})[0];useH(p,w);S[p].GY.push(w)}L(p+' discards '+n);return cb&&cb()}
  pmList('Discard '+n,H.map(function(h,i){return{t:h,i:i}}),function(x){pmClose();var c=H.splice(x.i,1)[0];S.ME.GY.push(c);L('ME discards '+c);save();try{render()}catch(e){}fxDiscard(p,n-1,cb)})}
 function fxSS(p,name,from,pos){var z=free(p,'M');if(!z)return false;S[p].z[z]={name:name,pos:pos||'ATK',atk:String(cd(name)[2]),def:String(cd(name)[3]),st:S.turn};L(p+' Special Summons '+name+' from '+from);return true}
 function fxSearch(p,test,cb){var pl=S[p].pile,i=-1;for(var j=pl.length-1;j>=0;j--)if(test(cd(pl[j]))){i=j;break}
@@ -1429,4 +1437,1153 @@ var _oD15c=openD;openD=function(p,k){var c=S[p].z[k];
  if(p=='ME'&&k[0]=='S'&&c&&c.pos=='SET'&&!(typeof PZONE!='undefined'&&PZONE)&&typeof pmList=='function'){var w=setActWhy(k);
   return pmList(c.name+' (Set)',[{t:'Activate',s:w?'⛔ '+w:(cd(c.name)[7]||'').slice(0,90),a:1,dis:w},{t:'Details',d:1},{t:'Cancel',x:1}],function(it){pmClose();if(it.a)setAct(k);else if(it.d)_oD15c(p,k)})}
  return _oD15c(p,k)};
+/* ===== v15d: one-off cards, CoH return, CPU spell window, features 2-11 ===== */
+function jinzoUp(){return ['ME','OPP'].some(function(q){return mons(q).some(function(z){var c=S[q].z[z];return lc(c.name)=='jinzo'&&c.pos!='DOWN'})})}
+if(typeof respOpts=='function'){var _ro15d=respOpts;respOpts=function(q){var r=_ro15d(q);return jinzoUp()?r.filter(function(o){return !/Trap/.test(cd(o.n)[1])}):r}}
+var _ta15d=trapOnAttack;trapOnAttack=function(){return jinzoUp()?false:_ta15d.apply(this,arguments)};
+var _ts15d=trapOnSummon;trapOnSummon=function(){if(jinzoUp())return;return _ts15d.apply(this,arguments)};
+if(typeof setActWhy=='function'){var _sw15d=setActWhy;setActWhy=function(k){var c=S.ME.z[k];if(c&&/Trap/.test(cd(c.name)[1])&&jinzoUp())return 'Jinzo: Traps cannot be activated';return _sw15d(k)}}
+FXC['jinzo']=function(p){[p,oth(p)].forEach(function(q){STs(q).forEach(function(z){var c=S[q].z[z];if(c.pos=='UP'&&/Trap/.test(cd(c.name)[1])){toGY(q,z);L('Jinzo destroys '+c.name)}})})};
+var _ss15d=ssStandby;ssStandby=function(){var dn=S.turn==SST;_ss15d();if(dn)return;var p=tp(),g=S[p].GY,i=g.indexOf('Sinister Serpent');if(i>=0){g.splice(i,1);hand(p).push('Sinister Serpent');L(p+' returns Sinister Serpent to hand')}};
+FXC['penguin soldier']=function(p,cb){var o=oth(p),l=mons(o).slice(0,2);l.forEach(function(z){fxGone(o,z,'hand')})};
+/* ignition effects */
+var IGN={'exiled force':{w:function(p){return fxTg(p,'M','opp').length?'':'No monster to destroy'},r:function(p,k,cb){toGY(p,k);L(p+' tributes Exiled Force');fxPick(p,fxTg(p,'M','opp'),'Exiled Force: destroy',function(t){if(t)fxGone(t[0],t[1]);cb()})}},
+ 'snipe hunter':{w:function(p){return !hand(p).length?'Need a card to discard':!fxTg(p,'A','opp').length?'No card to destroy':''},r:function(p,k,cb){fxDiscard(p,1,function(){var d=1+Math.floor(Math.random()*6);L(p+' Snipe Hunter rolls '+d);if(d==1||d==6)return cb();fxPick(p,fxTg(p,'A','opp'),'Snipe Hunter: destroy',function(t){if(t)fxGone(t[0],t[1]);cb()})})}},
+ 'breaker the magical warrior':{w:function(p){return fxTg(p,'S').length?'':'No Spell/Trap'},r:function(p,k,cb){FXC['breaker the magical warrior'](p,cb)}},
+ 'tribe-infecting virus':{w:function(p){return hand(p).length?'':'Need a card to discard'},r:function(p,k,cb){FXC['tribe-infecting virus'](p);cb()}},
+ 'chaos emperor dragon - envoy of the end':{w:function(p){return S[p].LP>1000?'':'Need 1000 LP'},r:function(p,k,cb){FXC['chaos emperor dragon - envoy of the end'](p);cb()}},
+ 'black luster soldier - envoy of the beginning':{w:function(p){return fxTg(p,'M','opp').length?'':'No monster to banish'},r:function(p,k,cb){fxPick(p,fxTg(p,'M','opp'),'BLS: banish',function(t){if(t)fxGone(t[0],t[1],'ban');cb()})}}};
+function ignOK(p,k){var c=S[p].z[k];if(!c||c.pos=='DOWN')return null;var I=IGN[lc(c.name)];if(!I)return null;S.ign=S.ign||{};if(S.ign[p+k]==S.turn)return 'Already used this turn';if(tp()!=p||!(S.phase==2||S.phase==4))return 'Only in your Main Phase';return I.w(p)}
+function ignUse(p,k){var c=S[p].z[k],w=ignOK(p,k);if(w){if(p=='ME')toast(w);return}S.ign[p+k]=S.turn;L(p+' uses '+c.name+"'s effect");IGN[lc(c.name)].r(p,k,function(){save();try{render()}catch(e){}})}
+var _od15d=openD;openD=function(p,k){var r=_od15d(p,k);try{var c=S[p].z[k];if(p=='ME'&&c&&k[0]=='M'&&IGN[lc(c.name)]&&!(typeof PICK!='undefined'&&PICK)){var w=ignOK(p,k),box=document.querySelector('#pm .pmb')||document.getElementById('pm');
+ if(box&&document.getElementById('pm').style.display!='none'){var b=document.createElement('button');b.className='ign';b.innerHTML='✨ Use effect'+(w?'<br><small>'+w+'</small>':'');if(w)b.disabled=true;b.onclick=function(){pmClose();ignUse(p,k)};box.insertBefore(b,box.firstChild)}
+ else if(!w)pmList(c.name,[{t:'✨ Use effect',s:(cd(c.name)[7]||'').slice(0,90)},{t:'Cancel',x:1}],function(it){pmClose();if(!it.x)ignUse(p,k)})}}catch(e){}return r};
+/* Change of Heart etc: control returns in End Phase */
+FXSKIP=/^(monster reborn|premature burial|call of the haunted)$/;
+function ctlReturn(){['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c&&c.ctl&&c.ctl.until&&c.ctl.until<=S.turn&&c.ctl.from!=q){var f=c.ctl.from,nz=free(f,'M');delete S[q].z[z];delete c.ctl;if(nz)S[f].z[nz]=c;else S[f].GY.push(c.name);L(c.name+' returns to '+f)}})})}
+var _nt15d=nextTurn;nextTurn=function(){ctlReturn();return _nt15d.apply(this,arguments)};
+/* CPU spells go through a response window */
+function cpuSpellPick(p){var o=oth(p),H=hand(p),om=mons(o).length,mm=mons(p).length;return H.filter(function(n){var c=cd(n),t=lc(c[7]||''),nm=lc(n);if(!/Spell/.test(c[1])||/Equip|Field|Ritual|Continuous/.test(c[1])||FXSKIP.test(nm))return false;
+ if(/destroy all monsters on the field/.test(t))return om>mm;if(/destroy all (face-up )?monsters your opponent/.test(t))return om>0;if(/destroy all spell/.test(t))return STs(o).length>STs(p).length;
+ if(/(destroy|return|banish|remove from play|take control)/.test(t))return fxTg(p,/spell|trap/.test(t)&&!/monster/.test(t)?'S':'M','opp').length>0;
+ if(/special summon/.test(t))return free(p,'M')&&S[p].GY.concat(S[o].GY).some(function(x){return /Monster/.test(cd(x)[1])});
+ if(/discard/.test(t)&&!/opponent/.test(t))return H.length>3;return /life points|damage|draw|add|atk|control/.test(t)||!!FXC[nm]})}
+function cpuSpells(done){var p='OPP',l=cpuSpellPick(p);if(!l.length||S.ME.LP<=0||S.OPP.LP<=0)return done();var n=l[0],z=free(p,'S');if(!z)return done();useH(p,n);S[p].z[z]={name:n,pos:'UP',atk:'',def:'',st:S.turn,set:S.turn};L('OPP activates '+n);try{AU.sfx('spell')}catch(e){}save();toast(NAMES.OPP+' activates '+n,0);
+ chainStart({type:'spell',p:p,name:n,z:z,res:function(){if(S[p].z[z]&&S[p].z[z].name==n){FXSRC=[p,z];fxRun(p,n,function(){FXSRC=null});if(S[p].z[z]&&S[p].z[z].name==n&&n!='Swords of Revealing Light')toGY(p,z)}},neg0:function(){if(S[p].z[z])toGY(p,z)}},function(){save();setTimeout(function(){cpuSpells(done)},spd(500))})}
+/* hand limit 6 */
+window.handLimit=function(p,cb){var n=hand(p).length-6;if(n<=0)return cb&&cb();L(p+' must discard '+n+' (hand limit)');fxDiscard(p,n,function(){save();cb&&cb()})};
+var _ai15d=aiTurn;aiTurn=function(p){_ai15d(p);var H=hand(p);while(H.length>6){var w=H.slice().sort(function(a,b){return stScore(a)+(+cd(a)[2]||0)-stScore(b)-(+cd(b)[2]||0)})[0];useH(p,w);S[p].GY.push(w);L(p+' discards '+w+' (hand limit)')}};
+/* 2007 Forbidden / Limited list (Sept 2007 TCG) */
+var FL07={F:['Black Luster Soldier - Envoy of the Beginning','Butterfly Dagger - Elma','Card of Safe Return','Change of Heart','Chaos Emperor Dragon - Envoy of the End','Confiscation','Cyber Jar','Delinquent Duo','Dimension Fusion','Exchange of the Spirit','Fiber Jar','Graceful Charity',"Harpie's Feather Duster",'Imperial Order','Last Turn','Magical Scientist','Makyura the Destructor','Metamorphosis','Mirage of Nightmare','Mirror Force','Monster Reborn','Painful Choice','Pot of Greed','Raigeki','Ring of Destruction','Sinister Serpent','Snatch Steal','The Forceful Sentry','Time Seal','Victory Dragon','Witch of the Black Forest','Yata-Garasu','Tsukuyomi','Sanctuary in the Sky'],
+ L:['Dark Hole','Heavy Storm','Mystical Space Typhoon','Premature Burial','Call of the Haunted','Torrential Tribute','Magic Cylinder','Sangan','Morphing Jar','Jinzo','Breaker the Magical Warrior','Exiled Force','Tribe-Infecting Virus','Injection Fairy Lily','Card Destruction','Swords of Revealing Light','Scapegoat','Snipe Hunter','Magician of Faith','Reinforcement of the Army','Solemn Judgment','Deck Devastation Virus','Crush Card Virus','Mind Control','Limiter Removal','Nobleman of Crossout','Brain Control','Book of Moon','Mask of Darkness','Mobius the Frost Monarch','Gravity Bind','Cyber Dragon','Twin-Headed Behemoth','Pot of Avarice','Night Assailant','Spirit Reaper','Tsukuyomi','Mirror Force','Monster Gate'],
+ S:['Mystic Tomato','Marauding Captain','Ceasefire','Upstart Goblin','Reckless Greed','Good Goblin Housekeeping','Last Will','Nimble Momonga','Manticore of Darkness','Mage Power']};
+function flMax(n){return FL07.F.indexOf(n)>=0?0:FL07.L.indexOf(n)>=0?1:FL07.S.indexOf(n)>=0?2:3}
+function flTag(n){var m=flMax(n);return m==0?' 🚫':m==1?' ①':m==2?' ②':''}
+function flFix(list,fill){var c={},out=[];list.forEach(function(n){c[n]=(c[n]||0)+1;if(c[n]<=flMax(n))out.push(n)});while(fill&&out.length<list.length&&out.length<40)out.push(fill);return out}
+var _da15d=dbAdd;dbAdd=function(n){var all=M.list.concat(M.fus||[],M.side||[]),cnt=all.filter(function(x){return x==n}).length,m=flMax(n);if(cnt>=m){toast(m==0?n+' is Forbidden (2007 list)':n+' is limited to '+m+' (2007 list)');return}return _da15d(n)};
+var _rd15d=repairDeck;repairDeck=function(){var r=_rd15d.apply(this,arguments);try{if(PRO.mode!='classic'){M.list=flFix(M.list);}M.side=flFix(M.side||[])}catch(e){}return r};
+var _su15d=setupSide;setupSide=function(p,list){if(p=='OPP'){var fill=list.filter(function(n){return /Normal Monster/.test(cd(n)[1])})[0]||'Giant Soldier of Stone';list=flFix(list,fill)}return _su15d(p,list)};
+/* coin toss */
+function coinToss(cb){var heads=Math.random()<.5,first=heads?'ME':'OPP';if(typeof HTMLElement=='undefined')return cb&&cb();
+ ov('<div class="coin'+(heads?' h':' t')+'"><div class="cf">H</div><div class="cb2">T</div></div><div id="ctx" style="font-size:20px;margin-top:14px">Call: Heads = Mike goes first</div>');try{AU.sfx('draw')}catch(e){}
+ setTimeout(function(){var e=document.getElementById('ctx');if(e)e.innerHTML='<b>'+(heads?'HEADS':'TAILS')+'</b> — '+(heads?'Mike':esc(NAMES.OPP||'Rival'))+' goes first';},spd(1600));
+ setTimeout(function(){try{ovClose()}catch(e){}S.first=first;S.turn=1;S.phase=0;save();if(tp()=='OPP')setTimeout(cpuTurn,spd(400));cb&&cb()},spd(2800))}
+var _rs15d=realStart;realStart=function(){var r=_rs15d.apply(this,arguments);S.match=S.match||null;if(SET15.bo3&&!S.match)S.match={g:1,w:0,l:0};coinToss();return r};
+/* Best-of-3 */
+var _me15d=matchEnd;matchEnd=function(win){var m=S.match;if(!SET15.bo3||!m)return _me15d(win);if(win)m.w++;else m.l++;
+ if(m.w>=2||m.l>=2){S.match=null;toast('Match '+(m.w>=2?'won':'lost')+' '+m.w+'-'+m.l,1);return _me15d(m.w>=2)}
+ m.g++;var keep=JSON.parse(JSON.stringify(m));ov('<h2>Game '+(m.g-1)+(win?' won':' lost')+'</h2><div style="font-size:20px">Match '+m.w+' - '+m.l+'</div><br><button class="big" onclick="ovClose();sideScreen(1)">Side deck</button><br><br><button class="big" onclick="ovClose();nextGame()">Next game</button>');S.match=keep};
+function nextGame(){var m=S.match;S.awarded=0;try{realStart()}catch(e){}S.match=m}
+/* side deck */
+function sideScreen(between){M.side=M.side||[];var sel=null;function R(){var o='<h2 style="margin:4px">Side Deck ('+M.side.length+'/15)</h2><input id="sdq" list="sdl" placeholder="Add card..." style="width:90%"><datalist id="sdl"></datalist><button onclick="sideAdd(document.getElementById(\'sdq\').value)">Add</button><div style="font-size:12px;color:#9ff">Tap a side card, then a main card to swap</div><div>'+
+ M.side.map(function(n,i){return '<span class="sdc'+(sel===i?' on':'')+'" onclick="sideSel('+i+')">'+esc(n)+'</span>'}).join('')+'</div><h3>Main ('+M.list.length+')</h3><div style="max-height:40vh;overflow:auto">'+M.list.map(function(n,i){return '<span class="sdc" onclick="sideSwap('+i+')">'+esc(n)+'</span>'}).join('')+'</div><br><button class="big" onclick="ovClose();'+(between?'nextGame()':'')+'">'+(between?'Next game':'Done')+'</button>';ov(o);
+ var q=document.getElementById('sdq');q.oninput=function(){var v=lc(q.value);document.getElementById('sdl').innerHTML=v.length<2?'':CARDS.filter(function(c){return lc(c[0]).indexOf(v)>=0}).slice(0,20).map(function(c){return '<option value="'+esc(c[0])+'">'}).join('')}}
+ window.sideSel=function(i){sel=sel===i?null:i;R()};window.sideSwap=function(i){if(sel==null)return toast('Pick a side card first');var t=M.list[i];M.list[i]=M.side[sel];M.side[sel]=t;sel=null;save();R()};
+ window.sideAdd=function(n){var c=CI[lc(n)];if(!c)return toast('Unknown card');if(M.side.length>=15)return toast('Side deck is full (15)');var cnt=M.list.concat(M.side,M.fus||[]).filter(function(x){return x==c[0]}).length;if(cnt>=flMax(c[0]))return toast('Over the 2007 limit');M.side.push(c[0]);save();R()};R()}
+/* viewers + log + settings */
+function zoneView(p,k){var a=k=='BAN'?(S[p].BAN||[]):S[p].GY;ov('<h2 style="margin:4px">'+(p=='ME'?'Your ':NAMES.OPP+' ')+(k=='BAN'?'Banished':'Graveyard')+' ('+a.length+')</h2><div class="gyv">'+(a.length?a.slice().reverse().map(function(n){var i=nix(n);return '<div class="gyc">'+(i>=0?rcard(i,hrar?hrar(n):''):esc(n))+'</div>'}).join(''):'<i>(empty)</i>')+'</div><br><button class="big" onclick="ovClose()">Close</button>')}
+showGY=function(p){zoneView(p,'GY')};
+function logView(){ov('<h2 style="margin:4px">Duel Log</h2><div style="max-height:65vh;overflow:auto;text-align:left;font:12px monospace">'+(S.log||[]).slice().reverse().map(esc).join('<br>')+'</div><br><button class="big" onclick="ovClose()">Close</button>')}
+function setSave(){localStorage.setItem('ygoSet15',JSON.stringify(SET15))}
+function setApply(){try{AU.vol(SET15.mus)}catch(e){}}
+function settingsView(){ov('<h2>Settings</h2><div class="setv">Music <input type="range" min="0" max="100" value="'+SET15.mus+'" oninput="SET15.mus=+this.value;setApply();setSave()"><br>SFX <input type="range" min="0" max="100" value="'+SET15.sfx+'" oninput="SET15.sfx=+this.value;setSave()"><br>Animation speed <select onchange="SET15.spd=+this.value;setSave()">'+[[0.5,'Slow'],[1,'Normal'],[2,'Fast'],[3,'Very fast']].map(function(o){return '<option value="'+o[0]+'"'+(SET15.spd==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select><br>CPU difficulty <select onchange="SET15.diff=this.value;setSave()">'+['Easy','Normal','Hard'].map(function(d){return '<option'+(SET15.diff==d?' selected':'')+'>'+d+'</option>'}).join('')+'</select><br><label><input type="checkbox"'+(SET15.bo3?' checked':'')+' onchange="SET15.bo3=this.checked;setSave()" style="width:20px;height:20px"> Best-of-3 matches</label></div><br><button class="big" onclick="ovClose()">Close</button>')}
+if(typeof AU!='undefined'&&AU.sfx){var _sx15d=AU.sfx;AU.sfx=function(k){if(SET15.sfx<=0)return;var g=typeof mg!='undefined'&&mg&&mg.gain,old=g&&g.value;try{if(g)g.value=SET15.sfx/100*.6}catch(e){}var r=_sx15d.apply(this,arguments);if(g)setTimeout(function(){try{g.value=SET15.mus/100*.6}catch(e){}},400);return r}}
+/* duel toolbar + main menu items */
+function dtbar(){if(typeof document=='undefined')return;var b=document.getElementById('dtb');if(!b){b=document.createElement('div');b.id='dtb';b.innerHTML='<button onclick="logView()">📜 Log</button><button onclick="zoneView(\'ME\',\'GY\')">🪦 My GY</button><button onclick="zoneView(\'OPP\',\'GY\')">🪦 Opp GY</button><button onclick="zoneView(\'ME\',\'BAN\')">⛔ Banished</button><button onclick="zoneView(\'OPP\',\'BAN\')">⛔ Opp Ban</button><button onclick="settingsView()">⚙</button>';var h=document.getElementById('hand')||document.body;h.parentNode.insertBefore(b,h)}}
+var _sm15d=showMode;showMode=function(){var r=_sm15d.apply(this,arguments);try{var m=document.getElementById('mode');if(m&&/DUEL ARENA/.test(m.innerHTML)&&!document.getElementById('mmx')){var d=document.createElement('div');d.id='mmx';
+ d.innerHTML=(duelLive()&&S.ME.LP>0&&S.OPP.LP>0?'<button class="big" onclick="resumeDuel()">▶ RESUME DUEL<br><small>Turn '+S.turn+' • LP '+S.ME.LP+' vs '+S.OPP.LP+'</small></button>':'')+'<button class="big" onclick="sideScreen()">SIDE DECK</button><button class="big" onclick="settingsView()">SETTINGS</button>';m.appendChild(d)}}catch(e){}return r};
+function resumeDuel(){var m=document.getElementById('mode');if(m)m.style.display='none';CPUBUSY=0;save();if(tp()=='OPP')setTimeout(cpuTurn,300)}
+var _rn15d=render;render=function(){_rn15d.apply(this,arguments);try{dtbar();if(S.phase==1)ssStandby()}catch(e){}};
+/* deck stats */
+var _db15d=dbR;dbR=function(){var r=_db15d.apply(this,arguments);try{var e=document.getElementById('dbl');if(!e)return r;var mo=0,sp=0,tr=0,cv={};M.list.forEach(function(n){var c=cd(n);if(/Monster/.test(c[1])){mo++;var l=+c[4]||0;cv[l]=(cv[l]||0)+1}else if(/Spell/.test(c[1]))sp++;else if(/Trap/.test(c[1]))tr++});var mx=Math.max.apply(null,Object.keys(cv).map(function(k){return cv[k]}).concat([1]));
+ e.insertAdjacentHTML('afterbegin','<div class="dst"><b>'+M.list.length+'</b> cards • 👾 '+mo+' • ✨ '+sp+' • 🪤 '+tr+'<div class="crv">'+[1,2,3,4,5,6,7,8,9,10,11,12].filter(function(l){return cv[l]}).map(function(l){return '<span><i style="height:'+Math.round(cv[l]/mx*40)+'px"></i>'+l+'<br>'+cv[l]+'</span>'}).join('')+'</div></div>');
+ [].forEach.call(e.querySelectorAll('span[onclick^="dbDel"]'),function(s){var n=s.textContent.replace(/ ✕$/,'');var t=flTag(n.trim());if(t)s.insertAdjacentHTML('afterbegin',t)})}catch(x){}return r};
+/* v15e: continuous stats, equip binding, piercing, battle-indestructible, standby upkeep/burn, LP costs, honest coverage */
+var RACES='aqua|beast|beast-warrior|dinosaur|dragon|fairy|fiend|fish|insect|machine|plant|psychic|pyro|reptile|rock|sea serpent|spellcaster|thunder|warrior|winged beast|zombie',ATTRS='light|dark|earth|water|fire|wind';
+function fxStatP(t){var r=[],m,re=/(gains?|loses?) (\d+) (atk and def|atk\/def|atk|def)|(increases?|decreases?) (?:the |its )?(atk and def|atk\/def|atk|def)[^.]*? by (\d+)|(atk|def|atk and def|atk\/def) (?:is |are )?(increased|decreased|raised|lowered) by (\d+)/g;
+ while(m=re.exec(t)){var neg,v,w;if(m[1]){neg=/lose/.test(m[1]);v=+m[2];w=m[3]}else if(m[4]){neg=/decr/.test(m[4]);v=+m[6];w=m[5]}else{neg=/decr|lower/.test(m[8]);v=+m[9];w=m[7]}
+  var s=t.slice(Math.max(0,m.index-160),m.index);if(/for each|until the end|this turn|during the battle|damage calculation|only during|\bif\b[^.]*$/.test(s+t.slice(m.index,m.index+60).split('.')[0]))continue;
+  var sc={};if(/equipped monster/.test(s.split('.').pop()+m[0])||/equipped monster/.test(s.slice(-60)))sc.eq=1;
+  var seg=s.split(/\. |, also |; also |\. also /).pop(),rm=seg.match(new RegExp('((?:(?:'+RACES+')(?:-type)?(?:, | and | or |, and )?)+) (?:-type )?monsters')),am=seg.match(new RegExp('\\b('+ATTRS+')\\b[^.]*monsters'));
+  if(rm)sc.race=rm[1].replace(/-type/g,'').split(/, and |, | and | or /).filter(Boolean);else if(am)sc.attr=am[1];
+  if(/you control|your side|your monsters/.test(seg))sc.side='me';else if(/your opponent controls|opponent's/.test(seg))sc.side='op';
+  if(!sc.eq&&!sc.race&&!sc.attr&&!/all|monsters/.test(seg))sc.self=1;
+  r.push({a:/atk/.test(w)?(neg?-v:v):0,d:/def/.test(w)?(neg?-v:v):0,sc:sc})}return r}
+function fxStat(){if(!S||!S.ME)return;var P=['ME','OPP'],D={};P.forEach(function(p){mons(p).forEach(function(z){D[p+z]={a:0,d:0}})});
+ P.forEach(function(p){Object.keys(S[p].z).forEach(function(k){var c=S[p].z[k];if(!c||!c.name||c.pos=='SET'||c.pos=='DOWN')return;var C=cd(c.name),ty=C[1]||'';
+  if(k[0]=='S'&&!/Equip|Field|Continuous/.test(ty))return;if(k[0]=='M'&&!/Effect/.test(ty))return;
+  if(/Equip/.test(ty))return;
+  fxStatP(lc(C[7]||'')).forEach(function(e){P.forEach(function(q){mons(q).forEach(function(z){var m=S[q].z[z],M=cd(m.name),ok;
+   if(e.sc.eq)ok=c.eq&&c.eq[0]==q&&c.eq[1]==z;else if(e.sc.self)ok=k[0]=='M'&&q==p&&z==k;else{ok=(!e.sc.side||(e.sc.side=='me')==(q==p));
+    if(e.sc.race)ok=ok&&e.sc.race.indexOf(lc(M[6]||''))>=0;if(e.sc.attr)ok=ok&&lc(M[5]||'')==e.sc.attr;if(k[0]=='M'&&!e.sc.race&&!e.sc.attr&&!e.sc.side)ok=ok&&q==p}
+   if(ok&&m.pos!='DOWN'){D[q+z].a+=e.a;D[q+z].d+=e.d}})})})})});
+ P.forEach(function(p){mons(p).forEach(function(z){var m=S[p].z[z],d=D[p+z];if(!d||m.atk===''&&!cd(m.name)[2]&&m.atk!==0&&m.atk!=='0'&&!m.cma)return;
+  var na=Math.max(0,(+m.atk||0)-(m.cma||0)+d.a),nd=Math.max(0,(+m.def||0)-(m.cmd||0)+d.d);if(m.cma!=d.a||m.cmd!=d.d){m.atk=na;m.def=nd;m.cma=d.a;m.cmd=d.d}})})}
+function fxEqBind(p,k){var c=S[p].z[k],e=fxStatP(lc(cd(c.name)[7]||'')),neg=e.length&&e[0].a+e[0].d<0,q=neg?oth(p):p,ms=mons(q);if(!ms.length&&!neg){q=oth(p);ms=mons(q)}
+ if(!ms.length){L(c.name+': no monster to equip');toGY(p,k);return}var z=ms.sort(function(a,b){return (+S[q].z[b].atk||0)-(+S[q].z[a].atk||0)})[neg?0:0];
+ eqApply(p,k,q,z);L(p+' equips '+c.name+' to '+S[q].z[z].name)}
+var _pl15e=place;place=function(p,k,name,pos){var old=S[p].z[k],r=_pl15e.apply(this,arguments),c=S[p].z[k];
+ try{if(c&&k[0]=='S'&&c.pos=='UP'&&(!old||old.pos!='UP'||old.name!=c.name)&&/Equip/.test(cd(c.name)[1]||'')&&!c.eq)Promise.resolve().then(function(){var d=S[p].z[k];if(d===c&&!c.eq){fxEqBind(p,k);try{save();render()}catch(e){}}});fxStat()}catch(e){}return r};
+function fxPierce(m){var t=lc(cd(m.name)[7]||'');if(/piercing|attacks a defense position monster[^.]*(inflict|difference)|atk exceeds[^.]*def[^.]*(inflict|damage)/.test(t))return 1;
+ return ['ME','OPP'].some(function(p){return Object.keys(S[p].z).some(function(k){var c=S[p].z[k];var q=c&&c.eq&&String(c.eq).split(':');return q&&S[q[0]]&&S[q[0]].z[q[1]]===m&&/piercing|defense position monster[^.]*(inflict|difference)/.test(lc(cd(c.name)[7]||''))})})}
+function fxNoBattle(m){return m&&/cannot be destroyed by battle/.test(lc(cd(m.name)[7]||''))&&!/once per turn|only once/.test(lc(cd(m.name)[7]||''))}
+var FIGHT15=0,_k15e=kill;kill=function(p,z){if(FIGHT15&&fxNoBattle(S[p].z[z])){L(S[p].z[z].name+' is not destroyed by battle');return}return _k15e.apply(this,arguments)};
+var _f15e=fight;fight=function(p,az,tz){try{fxStat()}catch(e){}var o=oth(p),A=S[p].z[az],D=tz&&S[o].z[tz],pr=D&&D.pos!='ATK'&&A&&fxPierce(A),dd=D?+D.def:0,pa=A?+A.atk:0,lp0=S[o].LP;FIGHT15=1;
+ try{_f15e.apply(this,arguments)}finally{FIGHT15=0}if(pr&&pa>dd&&S[o].LP==lp0&&S[p].z[az]===A&&(!S[o].z[tz]||S[o].z[tz]!==D||D.pos!='ATK')){dmg(o,pa-dd);L(A.name+' piercing damage '+(pa-dd))}try{fxStat()}catch(e){}};
+function fxStandby(){var p=tp();if(S.sb15==S.turn)return;S.sb15=S.turn;Object.keys(S[p].z).forEach(function(k){var c=S[p].z[k];if(!c||!c.name||c.pos!='UP'&&c.pos!='ATK'&&c.pos!='DEF')return;
+ var t=lc(cd(c.name)[7]||''),m=t.match(/(?:during )?(?:each of )?your standby phases?[^.]*?(?:,|:)? ?(?:you must )?(pay|inflict|increase your life points by|gain) (\d+)/)||t.match(/(?:pay|inflict|gain) (\d+)[^.]*during (?:each of )?your standby phase/);if(!m)return;
+ var v=+(m[2]||m[1]),w=m[2]?m[1]:(/pay/.test(m[0])?'pay':/inflict/.test(m[0])?'inflict':'gain');
+ if(w=='pay'){if(S[p].LP>v){S[p].LP-=v;L(p+' pays '+v+' LP to keep '+c.name)}else{L(c.name+' destroyed (upkeep)');toGY(p,k)}}else if(w=='inflict')fxDmg(oth(p),v);else fxGain(p,v)});try{lpAnim&&0}catch(e){}}
+var _ss15e=ssStandby;ssStandby=function(){_ss15e.apply(this,arguments);try{fxStandby()}catch(e){}};
+var _fr15e=fxRun;fxRun=function(p,n,cb){var t=fxT(n),m=t.match(/pay (\d+) life points?[^.;]*?(;|to activate)/);if(m&&!FXC[lc(n)]){if(S[p].LP<=+m[1]){L(p+' cannot pay '+m[1]+' LP');(cb||function(){})();return true}S[p].LP-=+m[1];L(p+' pays '+m[1]+' LP')}return _fr15e.apply(this,arguments)};
+var _rn15e=render;render=function(){try{fxStat()}catch(e){}return _rn15e.apply(this,arguments)};
+/* honest coverage: count only cards whose text some executing handler matches; no blanket type passes */
+function fxWhy(c){var n=lc(c[0]),t=lc(c[7]||''),ty=c[1]||'';
+ if(FXC[n]||FXBATTLE[n]||FXGY[n]||(typeof RESP!='undefined'&&RESP[n])||(typeof IGN!='undefined'&&IGN[n])||/^(monster reborn|premature burial|call of the haunted|change of heart|jinzo|sinister serpent)$/.test(n))return 'hand';
+ if(/Equip/.test(ty)&&fxStatP(t).length)return 'equip';if(/Field|Continuous|Effect/.test(ty)&&fxStatP(t).some(function(e){return !e.sc.eq}))return 'aura';
+ if(fxPierce({name:c[0]}))return 'pierce';if(fxNoBattle({name:c[0]}))return 'nobattle';if(/standby phase/.test(t)&&/(pay|inflict|gain|increase your life points by) \d+/.test(t))return 'standby';
+ if(/Effect/.test(ty)&&!/flip:/.test(t))return '';
+ if(/(target|select) (1|one|2|two) [^.;]*[;,] (destroy|return|banish|take control|change)|flip:|increase your life points by|inflicts? \d+|draw (one|two|three|\d) card|destroy all|(destroy|return|remove from play|banish|take control of|change)\D{0,40}?(1|one|2|two) (face-up )?(monster|spell|card)|from your deck to your hand|(increase|decrease)s? the atk/.test(t))return 'gen';return ''}
+function fxNoEff(c){var t=lc(c[7]||'').replace(/\([^)]*\)/g,'');return /Fusion|Ritual/.test(c[1])&&!/Spell/.test(c[1])&&!t.split(/\. ?/).filter(function(s){return s.trim()&&!/\+|ritual summon|fusion summon|special summoned|must first be|"[^"]+"$/.test(s)}).length}
+fxCover=function(){var tot=0,ok=0,un=[],by={};CARDS.forEach(function(c){var t=lc(c[7]||'');if(/Normal Monster/.test(c[1])||!t||fxNoEff(c))return;tot++;var w=fxWhy(c);if(w){ok++;by[w]=(by[w]||0)+1}else un.push(c[0])});return{tot:tot,ok:ok,pct:Math.round(ok*1000/tot)/10,un:un,by:by}};
+
+/* v15f: generic clause triggers (summon / GY / battle-destroy / battle-damage) + generic ignition effects */
+var FXTO=null,_fxT15f=fxT;fxT=function(n){return FXTO&&FXTO[0]==n?FXTO[1]:_fxT15f(n)};
+var GENRE=/(target|select) (1|one|2|two) [^.;]*[;,] (destroy|return|banish|take control|change)|increase your life points by|inflicts? \d+|draw (one|two|three|\d) card|destroy all|(destroy|return|remove from play|banish|take control of|change)\D{0,40}?(1|one|2|two) (face-up )?(monster|spell|card)|from your deck to your hand|(increase|decrease)s? the atk/;
+var TRIG={sum:/when this card is (?:normal |flip |tribute )?summoned(?: successfully)?[^:,.]*[:,] ?/,gy:/when this card is (?:destroyed by battle and )?sent (?:from the field )?to the graveyard[^:,.]*[:,] ?/,kill:/when this card destroys (?:a|an opponent's) monster (?:by battle|as a result of battle)[^:,.]*[:,] ?|if this card destroys a monster by battle[^:,.]*[:,] ?/,dmg:/when this card inflicts battle damage to your opponent(?:'s life points)?[^:,.]*[:,] ?|if this card inflicts battle damage to your opponent[^:,.]*[:,] ?/};
+function fxClause(t,re){var m=t.match(re);if(!m)return '';var s=t.slice(m.index+m[0].length),e=s.search(/\. (?!\d)|$/);return s.slice(0,e+1)}
+function fxTrig(p,n,kind,cb){var t=_fxT15f(n),c=fxClause(t,TRIG[kind]);if(!c||!GENRE.test(c))return false;FXTO=[n,c];try{L(p+' '+n+' effect');fxGeneric(p,n,cb||function(){})}finally{FXTO=null}return true}
+var _pl15f=place;place=function(p,k,name,pos){var old=S[p].z[k],r=_pl15f.apply(this,arguments),c=S[p].z[k];
+ try{if(c&&k[0]=='M'&&c.pos!='DOWN'&&(!old||old.name!=c.name)&&/Effect/.test(cd(c.name)[1]||'')&&!FXC[lc(c.name)])fxTrig(p,c.name,'sum')}catch(e){}return r};
+var _gy15f=toGY;toGY=function(p,z){var c=S[p].z[z];_gy15f.apply(this,arguments);try{if(c&&z[0]=='M'&&!FXOFF&&!FXGY[lc(c.name)]&&c.pos!='DOWN')fxTrig(p,c.name,'gy')}catch(e){}};
+var _f15f=fight;fight=function(p,az,tz){var o=oth(p),A=S[p].z[az],D=tz&&S[o].z[tz],lp=S[o].LP;_f15f.apply(this,arguments);
+ try{if(A&&S[p].z[az]===A){if(D&&S[o].z[tz]!==D)fxTrig(p,A.name,'kill');if(S[o].LP<lp)fxTrig(p,A.name,'dmg')}}catch(e){}};
+/* generic ignition */
+function fxIgnOf(t){var m=t.match(/(?:once per turn[,:]? (?:during your main phase[,:]? )?)?you can (?:(tribute this card|send this card to the graveyard|discard (?:1|one) card|pay (\d+) life points)(?:[,;] | to ))?([^.]*\.)/);
+ if(!m||/^(?:[^.]*\b(when|if)\b)/.test(t.slice(Math.max(0,t.lastIndexOf('. ',m.index)),m.index))||!GENRE.test(m[3]))return null;return {cost:m[1]||'',lp:+m[2]||0,c:m[3]}}
+CARDS.forEach(function(c){var n=lc(c[0]);if(IGN[n]||FXC[n]||!/Effect/.test(c[1]||''))return;var I=fxIgnOf(lc(c[7]||''));if(!I)return;
+ IGN[n]={g:1,w:function(p){return /discard/.test(I.cost)&&!hand(p).length?'Need a card to discard':I.lp&&S[p].LP<=I.lp?'Not enough LP':''},
+  r:function(p,k,cb){var go=function(){FXTO=[c[0],I.c];try{fxGeneric(p,c[0],cb)}finally{FXTO=null}};if(/tribute|send this/.test(I.cost))toGY(p,k);if(I.lp){S[p].LP-=I.lp;L(p+' pays '+I.lp+' LP')}if(/discard/.test(I.cost))fxDiscard(p,1,go);else go()}}});
+var _why15f=fxWhy;fxWhy=function(c){var w=_why15f(c);if(w)return w;var t=lc(c[7]||''),n=lc(c[0]);if(IGN[n]&&IGN[n].g)return 'ign';
+ for(var k in TRIG){var cl=fxClause(t,TRIG[k]);if(cl&&GENRE.test(cl))return 'trig'}return ''};
+
+/* v16a: sentence-level generic effect interpreter + strict coverage */
+var NUMW={a:1,an:1,one:1,two:2,three:3,four:4,five:5,1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10};
+function fxSplit(t){t=t.replace(/\(this card is (?:always )?treated[^)]*\)|\(this card's name[^)]*\)|\(quick effect\)|\(damage calculation is applied normally\.?\)/g,'');return t.split(/(?<=\.)\s+(?=[a-z"(])/).map(function(s){return s.trim()}).filter(Boolean)}
+function fxFilt(s){var f=[],m;s=s.replace(/^.*?(?:target|select|send|add|special summon|destroy|return|banish|remove from play|discard|tribute|equip)/,'');
+ if(m=s.match(/level (\d+) or (lower|higher|less|more)/))f.push(function(c){var l=+c[4]||0;return /low|less/.test(m[2])?l&&l<=+m[1]:l>=+m[1]});else if(m=s.match(/level (\d+) (?:monster|\w+-type)/))f.push(function(c){return +c[4]==+m[1]});
+ var a=s.match(/(\d+) or (less|more) (atk|def)|(atk|def) (?:of )?(\d+) or (less|more|lower|higher)/);if(a){var v=+(a[1]||a[5]),w=a[3]||a[4],lt=/less|lower/.test(a[2]||a[6]);f.push(function(c){var x=+c[w=='atk'?2:3]||0;return lt?x<=v:x>=v})}
+ var r=s.match(new RegExp('\\b('+RACES+')(?:-type)?\\b'));if(r&&!/type of monster/.test(s))f.push(function(c){return lc(c[6]||'').replace(/-type/,'')==r[1]});
+ var at=s.match(new RegExp('\\b('+ATTRS+')\\b'));if(at)f.push(function(c){return lc(c[5]||'')==at[1]});
+ var q=s.match(/"([^"]+)"/);if(q&&!/ token/.test(q[1]))f.push(function(c){return lc(c[0]).indexOf(q[1])>=0||lc(c[7]||'').indexOf('"'+q[1]+'"')>=0});
+ if(/\bspell or trap|spell\/trap/.test(s))f.push(function(c){return /Spell|Trap/.test(c[1])});else if(/\bspell card/.test(s))f.push(function(c){return /Spell/.test(c[1])});else if(/\btrap card/.test(s))f.push(function(c){return /Trap/.test(c[1])});else if(/monster/.test(s))f.push(function(c){return /Monster/.test(c[1])});
+ if(/normal monster/.test(s))f.push(function(c){return /Normal Monster/.test(c[1])});if(/effect monster/.test(s))f.push(function(c){return /Effect/.test(c[1])});
+ return function(c){c=c&&c.length?c:cd(c);return f.every(function(g){return g(c)})}}
+function fxNum(s){var m=s.match(/\b(a|an|one|two|three|four|five|\d+)\b (?:face-up |face-down |set |level|card|monster|spell|trap|"|\w+-type|light|dark|earth|water|fire|wind|normal|effect|of)/);return m?NUMW[m[1]]||1:1}
+function fxSide(p,s){return /your opponent's (?:hand|graveyard|deck|side)|your opponent controls|opponent's monster|opponent's (?:spell|card)/.test(s)?'opp':/you control|your side|your graveyard|your hand|your deck/.test(s)?'own':'any'}
+function fxFieldT(p,s,ctx){var k=/spell or trap|spell\/trap|spell card|trap card/.test(s)?'S':/monster/.test(s)?'M':'A',sd=fxSide(p,s),F=fxFilt(s),r=fxTg(p,k,sd=='any'?'':sd);
+ if(/face-up/.test(s))r=r.filter(function(x){var c=S[x[0]].z[x[1]];return c.pos!='DOWN'&&c.pos!='SET'});if(/face-down|set /.test(s))r=r.filter(function(x){var c=S[x[0]].z[x[1]];return c.pos=='DOWN'||c.pos=='SET'});
+ if(/attack position/.test(s))r=r.filter(function(x){return S[x[0]].z[x[1]].pos=='ATK'});if(/defense position/.test(s))r=r.filter(function(x){return S[x[0]].z[x[1]].pos!='ATK'});
+ r=r.filter(function(x){return F(cd(S[x[0]].z[x[1]].name))&&!fxProt(x[0],x[1])});if(sd=='any'&&k=='M')r.sort(function(a,b){return (a[0]==p)-(b[0]==p)});return r}
+function fxProt(q,z){var c=S[q].z[z];return c&&FXSRC&&FXSRC[0]!=q&&/cannot be targeted|unaffected by|cannot be destroyed by (?:card|spell|trap)/.test(fxT(c.name))&&!/once per turn/.test(fxT(c.name))}
+function fxEach(p,list,n,title,cb,fn){var out=[];(function nx(i){if(i>=n||!list.length)return cb(out);fxPick(p,list,title,function(x){if(!x)return cb(out);list=list.filter(function(y){return y!==x&&!(y[0]==x[0]&&y[1]==x[1])});fn(x);out.push(x);nx(i+1)})})(0)}
+function fxPile(q,where){return where=='gy'?S[q].GY:where=='hand'?hand(q):where=='ban'?(S[q].BAN=S[q].BAN||[]):S[q].pile}
+function fxTok(p,s){var m=s.match(/special summon (\w+) "?([^"(]+?)"? tokens? \(([^)]*)\)/);if(!m)return false;var n=NUMW[m[1]]||1,inf=m[3],a=(inf.match(/atk (\d+)/)||[0,0])[1],d=(inf.match(/def (\d+)/)||[0,0])[1],q=/opponent's side|your opponent's field/.test(s)?oth(p):p,c=0;
+ for(var i=0;i<n;i++){var z=free(q,'M');if(!z)break;S[q].z[z]={name:m[2].replace(/ token$/i,'')+' Token',pos:/defense/.test(s)?'DEF':'ATK',atk:String(a),def:String(d),st:S.turn,tok:1};c++}L(q+' gets '+c+' token(s)');return true}
+/* per-turn modifiers */
+function fxTemp(q,z,da,dd,set){var c=S[q].z[z];if(!c)return;c.tm=c.tm||[];var a0=+c.atk||0,d0=+c.def||0;if(set){da=set[0]==null?0:set[0]-a0;dd=set[1]==null?0:set[1]-d0}c.atk=String(Math.max(0,a0+da));c.def=String(Math.max(0,d0+dd));c.tm.push([S.turn,da,dd]);L(c.name+' ATK '+c.atk+' DEF '+c.def+' (this turn)')}
+function fxTempEnd(){['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(!c.tm)return;c.tm=c.tm.filter(function(t){if(t[0]<S.turn){c.atk=String(Math.max(0,(+c.atk||0)-t[1]));c.def=String(Math.max(0,(+c.def||0)-t[2]));return false}return true})})});S.flags=(S.flags||[]).filter(function(f){return f.t>=S.turn-1})}
+function fxFlag(k,p,t){(S.flags=S.flags||[]).push({k:k,p:p,t:t==null?S.turn:t})}function fxHas(k,p){return (S.flags||[]).some(function(f){return f.k==k&&(!p||f.p==p)&&f.t>=S.turn})}
+/* the action vocabulary: each returns true if it did something real */
+var ACT=[
+ [/^(?:you can )?pay (\d+) life points?/,function(p,m){S[p].LP-=+m[1];L(p+' pays '+m[1]+' LP')}],
+ [/(?:increase your life points by|you gain|gain) (\d+) (?:life points|lp)/,function(p,m){fxGain(p,+m[1])}],
+ [/(?:inflict|inflicts) (\d+) (?:points of )?damage to (?:your )?opponent|your opponent takes (\d+) damage|inflict (\d+) damage/,function(p,m){fxDmg(oth(p),+(m[1]||m[2]||m[3]))}],
+ [/inflict damage to your opponent equal to (?:the |its |that monster's )?(?:original )?(atk|def|level)/,function(p,m,s,x){var c=x&&x.c||{};var v=m[1]=='level'?(+cd(c.name)[4]||0)*100:+(c[m[1]]||cd(c.name||'')[m[1]=='atk'?2:3])||0;fxDmg(oth(p),v)}],
+ [/(?:you take|inflict) (\d+) damage to (?:yourself|you)|you lose (\d+) (?:life points|lp)/,function(p,m){fxDmg(p,+(m[1]||m[2]))}],
+ [/(?:both players|each player) (?:draw|draws) (\w+) cards?/,function(p,m){[p,oth(p)].forEach(function(q){drawP(q,NUMW[m[1]]||1)})}],
+ [/(?:^|\W)(?:you )?draw (\w+) cards?/,function(p,m){drawP(p,NUMW[m[1]]||1);L(p+' draws '+(NUMW[m[1]]||1))}],
+ [/your opponent draws (\w+) cards?/,function(p,m){drawP(oth(p),NUMW[m[1]]||1)}],
+ [/special summon (\w+) "?[^"(]+?"? tokens? \(/,function(p,m,s){fxTok(p,s)}],
+ [/(?:add|return) (?:up to )?(\w+) [^.;]*?from your (deck|graveyard) to your hand/,function(p,m,s){var F=fxFilt(s),L0=fxPile(p,m[2]=='deck'?'deck':'gy'),n=NUMW[m[1]]||1,c=0;for(var j=L0.length-1;j>=0&&c<n;j--)if(F(cd(L0[j]))){hand(p).push(L0.splice(j,1)[0]);c++}if(m[2]=='deck')S[p].deck=S[p].pile.length;L(p+' adds '+c+' card(s) from '+m[2]+' to hand');return c>0}],
+ [/special summon (?:up to )?(\w+)? ?[^.;]*?from (?:your |either player's |your opponent's )?(hand|deck|graveyard)/,function(p,m,s,x){var F=fxFilt(s),w=m[2]=='hand'?'hand':m[2]=='deck'?'deck':'gy',qs=/either player's/.test(s)?[p,oth(p)]:/your opponent's graveyard/.test(s)?[oth(p)]:[p],n=NUMW[m[1]]||1,c=0;
+   qs.forEach(function(q){var L0=fxPile(q,w);for(var j=L0.length-1;j>=0&&c<n;j--){var nm=L0[j];if(isMon(nm)&&F(cd(nm))&&free(p,'M')){L0.splice(j,1);fxSS(p,nm,w,/defense position/.test(s)?'DEF':'ATK');c++}}});if(w=='deck')S[p].deck=S[p].pile.length;return c>0}],
+ [/special summon (?:it|that monster|this card|the target|that target)/,function(p,m,s,x){if(x&&x.gy){var g=S[x.q].GY,i=g.lastIndexOf(x.n);if(i>=0&&free(p,'M')){g.splice(i,1);return fxSS(p,x.n,'graveyard')}}if(x&&x.hand){var h=hand(x.q),i2=h.indexOf(x.n);if(i2>=0&&free(p,'M')){h.splice(i2,1);return fxSS(p,x.n,'hand')}}return false}],
+ [/(?:send|discard) (\w+) cards? from your hand to the graveyard|discard (\w+) cards?(?! from)/,function(p,m,s,x,cb){fxDiscard(p,NUMW[m[1]||m[2]]||1,cb);return 'wait'}],
+ [/your opponent discards (\w+)|your opponent (?:must )?(?:send|discard)s? (\w+) cards? from their hand|discard (\w+) (?:random )?cards? from your opponent's hand/,function(p,m){var o=oth(p),H=hand(o),n=Math.min(NUMW[m[1]||m[2]||m[3]]||1,H.length);for(var i=0;i<n;i++){var j=Math.floor(Math.random()*H.length);S[o].GY.push(H.splice(j,1)[0])}L(o+' discards '+n);return n>0}],
+ [/send the top (\w+) cards? (?:of|from) (your|your opponent's|each player's) deck to the graveyard/,function(p,m){var qs=m[2]=='your'?[p]:m[2]=="your opponent's"?[oth(p)]:[p,oth(p)],n=NUMW[m[1]]||+m[1]||1;qs.forEach(function(q){for(var i=0;i<n&&S[q].pile.length;i++)S[q].GY.push(S[q].pile.pop());S[q].deck=S[q].pile.length;L(q+' mills '+n)})}],
+ [/send (\w+) [^.;]*?from your deck to the graveyard/,function(p,m,s){var F=fxFilt(s),P0=S[p].pile,c=0,n=NUMW[m[1]]||1;for(var j=P0.length-1;j>=0&&c<n;j--)if(F(cd(P0[j]))){S[p].GY.push(P0.splice(j,1)[0]);c++}S[p].deck=P0.length;L(p+' sends '+c+' from Deck to GY');return c>0}],
+ [/banish (\w+) [^.;]*?from (?:your opponent's|either player's|your|a) graveyard|remove from play (\w+) [^.;]*?(?:in|from) (?:your opponent's|either player's|your|a) graveyard/,function(p,m,s){var q=/opponent's/.test(s)?oth(p):p,F=fxFilt(s),G=S[q].GY,n=NUMW[m[1]||m[2]]||1,c=0;for(var j=G.length-1;j>=0&&c<n;j--)if(F(cd(G[j]))){(S[q].BAN=S[q].BAN||[]).push(G.splice(j,1)[0]);c++}L(c+' card(s) banished from GY');return c>0}],
+ [/shuffle (?:it|them|those cards|that card|all cards[^.;]*) into the deck|return (?:it|them) to the deck/,function(p,m,s,x){if(x&&x.z&&S[x.q].z[x.z]){fxGone(x.q,x.z,'deck');return true}return false}],
+ [/(destroy|banish|remove from play|return|send|shuffle|change|take control of|flip)(?: all| up to (\w+)| (\w+))? ([^.;]*?(?:monsters?|spell(?: or trap)? cards?|trap cards?|cards?|spell\/trap cards?))(?: on the field| your opponent controls| you control| your opponent has| on your opponent's side of the field)?(?:[^.;]*?)(?: to (?:the |its |their )?(?:owner's )?(hand|deck|graveyard|face-down defense position|defense position|attack position))?/,function(p,m,s,x,cb){
+   var v=m[1],all=/^\w+ all/.test(m[0]),n=all?99:NUMW[m[2]||m[3]]||1,T=fxFieldT(p,m[0],x),how=v=='destroy'?'':v=='banish'||v=='remove from play'?'ban':v=='return'?(m[5]=='deck'||/to the deck/.test(s)?'deck':'hand'):v=='send'?'gy':v=='shuffle'?'deck':v;if(!T.length)return false;
+   if(/to the graveyard/.test(m[0])&&v=='send')how='gy';var act=function(x2){var q=x2[0],z=x2[1],c=S[q].z[z];if(!c)return;
+    if(how=='change'||how=='flip'){c.pos=/face-down/.test(s)?'DOWN':c.pos=='ATK'?'DEF':'ATK';L(c.name+' changes position')}else if(how=='take control of'){var f=free(p,'M');if(f){S[p].z[f]=c;delete S[q].z[z];c.ctl=/until the end/.test(s)?q:0;L(p+' takes control of '+c.name)}}
+    else if(how=='gy')toGY(q,z);else fxGone(q,z,how)};
+   if(all){T.forEach(act);return true}fxEach(p,T,n,v.toUpperCase()+' target',function(){cb()},act);return 'wait'}],
+ [/negate (?:the|that|its) attack|the attack is negated/,function(p,m,s,x){if(x&&x.l0){x.l0.stop=1;return true}if(typeof CHAIN!='undefined'&&CHAIN){CHAIN.l[0].stop=1;return true}return false}],
+ [/end the battle phase/,function(p){BPEND=1;if(tp()=='ME'&&S.phase==3)S.phase=4;L('Battle Phase ends')}],
+ [/negate (?:the activation|its activation|the effect|that effect|it)[^.;]*?(?:, and destroy it)?/,function(p,m,s,x){if(typeof CHAIN!='undefined'&&CHAIN&&x&&x.idx>0){var k=CHAIN.l[x.idx-1];k.neg=1;if(/destroy/.test(s)&&k.z&&S[k.p].z[k.z])toGY(k.p,k.z);return true}return false}],
+ [/(?:that|the|this|target|selected|equipped|attacking) monster(?:'s)? (?:atk|def)?[^.;]*?(gains?|loses?|increase|decrease|becomes?|is halved|halve)[^.;]*?(\d+)?[^.;]*?(?:until the end of (?:this|the) turn|this turn|during this turn|until the end phase)/,function(p,m,s,x){var tgt=x&&x.z&&S[x.q].z[x.z]?[x.q,x.z]:null;if(!tgt){var T=fxFieldT(p,'1 face-up monster'+(/opponent/.test(s)?' your opponent controls':' you control'),x);tgt=T[0]}if(!tgt)return false;
+   var c=S[tgt[0]].z[tgt[1]],v=+m[2]||0,neg=/lose|decrease/.test(m[1]),w=/atk and def|atk\/def/.test(s)?'b':/def/.test(s.split(m[1])[0])&&!/atk/.test(s.split(m[1])[0])?'d':'a';
+   if(/halv/.test(m[1]))return fxTemp(tgt[0],tgt[1],-Math.floor((+c.atk||0)/2),0),true;if(/becomes? 0/.test(s))return fxTemp(tgt[0],tgt[1],0,0,[w!='d'?0:null,w!='a'?0:null]),true;if(!v)return false;
+   fxTemp(tgt[0],tgt[1],w!='d'?(neg?-v:v):0,w!='a'?(neg?-v:v):0);return true}],
+ [/(?:all |each )?(?:face-up )?monsters? (?:you control|your opponent controls|on the field)[^.;]*?(gain|lose)s? (\d+) (atk and def|atk\/def|atk|def)[^.;]*?(?:until the end of (?:this|the) turn|this turn)/,function(p,m,s){var q=/opponent/.test(s)?[oth(p)]:/on the field/.test(s)?[p,oth(p)]:[p],v=(/lose/.test(m[1])?-1:1)*m[2];q.forEach(function(qq){mons(qq).forEach(function(z){fxTemp(qq,z,/atk/.test(m[3])?v:0,/def/.test(m[3])?v:0)})});return true}],
+ [/this card (?:gains|loses) (\d+) (atk|def|atk and def)[^.;]*?(?:until the end of (?:this|the) turn|this turn)/,function(p,m,s,x){if(!x||!x.z||!S[x.q].z[x.z])return false;var v=(/loses/.test(m[0])?-1:1)*m[1];fxTemp(x.q,x.z,/atk/.test(m[2])?v:0,/def/.test(m[2])?v:0);return true}],
+ [/skip (?:your opponent's|their) next (draw|standby|battle|main) phase/,function(p,m){fxFlag('skip'+m[1],oth(p),S.turn+1);L(oth(p)+' skips next '+m[1]+' phase')}],
+ [/(?:look at|see|reveal|check) (?:all )?(?:the )?(?:cards in )?(?:your opponent's hand|the top (\w+) cards? of (?:your opponent's|your|either player's) deck|your opponent's set cards?|1 face-down card)/,function(p,m,s){var o=oth(p),list=/hand/.test(s)?hand(o):/your deck/.test(s)?S[p].pile.slice(-(NUMW[m[1]]||1)):/set card|face-down/.test(s)?STs(o).concat(mons(o)).map(function(z){return S[o].z[z].name}):S[o].pile.slice(-(NUMW[m[1]]||1));L(p+' sees: '+(list.join(', ')||'nothing'));if(p=='ME')toast('Seen: '+(list.join(', ')||'nothing'));return true}],
+ [/destroy this card/,function(p,m,s,x){if(x&&x.z&&S[x.q].z[x.z]){toGY(x.q,x.z);return true}return false}],
+ [/(?:tribute|send) (?:this card|this face-up card)(?: to the graveyard)?/,function(p,m,s,x){if(x&&x.z&&S[x.q].z[x.z]){toGY(x.q,x.z);return true}return false}],
+ [/tribute (\w+) monsters?/,function(p,m,s,x){var T=mons(p).filter(function(z){return !(x&&x.z==z&&x.q==p)}).filter(function(z){return fxFilt(s)(cd(S[p].z[z].name))}),n=NUMW[m[1]]||1;if(T.length<n)return false;T.sort(function(a,b){return (+S[p].z[a].atk||0)-(+S[p].z[b].atk||0)}).slice(0,n).forEach(function(z){toGY(p,z)});L(p+' tributes '+n);return true}],
+ [/place (\w+) [^.;]*?counters? on (?:this card|it|that card)/,function(p,m,s,x){var c=x&&x.z&&S[x.q].z[x.z];if(!c)return false;c.ctr=(c.ctr||0)+(NUMW[m[1]]||1);L(c.name+' counters: '+c.ctr);return true}],
+ [/place (\w+) [^.;]*?counters? on (\w+) (?:face-up )?(monsters?|cards?)/,function(p,m,s){var T=fxFieldT(p,m[2]+' face-up '+m[3]+(/opponent/.test(s)?' your opponent controls':''));if(!T.length)return false;var c=S[T[0][0]].z[T[0][1]];c.ctr=(c.ctr||0)+(NUMW[m[1]]||1);L(c.name+' counters: '+c.ctr);return true}],
+ [/(?:toss a coin|roll a (?:six-sided )?die)/,function(p,m,s){var d=/coin/.test(s)?(Math.random()<.5?'Heads':'Tails'):1+Math.floor(Math.random()*6);L(p+' gets '+d);FXROLL=d;return true}],
+ [/(?:set|place) (\w+)? ?[^.;]*?(spell|trap)[^.;]*?from your (deck|graveyard) (?:to|on|face-up on|directly to) (?:the|your) (?:field|spell & trap card zone|side of the field)/,function(p,m,s){var F=fxFilt(s),L0=fxPile(p,m[3]=='deck'?'deck':'gy'),z=free(p,'S');if(!z)return false;for(var j=L0.length-1;j>=0;j--)if(F(cd(L0[j]))){var n=L0.splice(j,1)[0];S[p].z[z]={name:n,pos:'SET',atk:'',def:'',st:S.turn,set:S.turn};L(p+' sets a card from '+m[3]);return true}return false}],
+ [/change (?:the )?battle positions? of (?:all|each) (?:face-up )?monsters?/,function(p,m,s){[p,oth(p)].forEach(function(q){if(/opponent controls/.test(s)&&q==p)return;mons(q).forEach(function(z){var c=S[q].z[z];c.pos=c.pos=='ATK'?'DEF':'ATK'})});return true}],
+ [/your opponent cannot (?:declare an attack|attack|conduct (?:their|his) battle phase)[^.;]*(?:until the end of (?:your|their) next turn|next turn|this turn|until)/,function(p,m,s){fxFlag('noatk',oth(p),S.turn+(/next turn/.test(s)?2:0));return true}],
+ [/(?:you|both players|neither player) (?:take|takes) no (?:battle )?damage[^.;]*?(?:this turn|until)/,function(p,m,s){fxFlag('nodmg',/both|neither/.test(s)?'':p);return true}]
+];
+var FXROLL=0;
+/* execute one clause: runs every action whose pattern occurs, sequentially */
+function fxAct(p,s,x,cb){cb=cb||function(){};var steps=[];ACT.forEach(function(a){var m=s.match(a[0]);if(m)steps.push([m.index,a,m])});steps.sort(function(a,b){return a[0]-b[0]});
+ var used=[],seq=steps.filter(function(st){var e=st[0]+st[2][0].length;if(used.some(function(u){return st[0]<u[1]&&e>u[0]}))return false;used.push([st[0],e]);return true});
+ if(!seq.length)return cb(),false;(function nx(i){if(i>=seq.length)return cb();var st=seq[i],w=false;try{w=st[1][1](p,st[2],s.slice(st[0]),x,function(){nx(i+1)})}catch(e){console.error&&console.error(e)}if(w!='wait')nx(i+1)})(0);return true}
+/* sentence classifier: what our hooks support */
+var TRG=[/^(?:flip|flip effect): ?/,/^when this (?:card|face-up card) is (?:normal |flip |tribute |special |successfully )*summoned[^:,]*?[:,] ?/,/^(?:when|if) this card is (?:destroyed(?: by battle| by a card effect)?(?: and sent to the graveyard)?|sent (?:from (?:the field|your hand|your deck) )?to the graveyard)[^:,]*?[:,] ?/,
+ /^(?:when|if) this card destroys (?:a|an opponent's|your opponent's) monster (?:by battle|as a result of battle)[^:,]*?[:,] ?/,/^(?:when|if) this card inflicts battle damage to your opponent[^:,]*?[:,] ?/,/^(?:once )?during (?:each of )?(?:your|each|either player's) (standby|end) phases?[^:,]*?[:,] ?/,
+ /^(?:when|if) this card is (?:removed from play|banished)[^:,]*?[:,] ?/,/^(?:when|if) this (?:face-down )?card is attacked[^:,]*?[:,] ?/,/^(?:when|if) this card attacks[^:,]*?[:,] ?/,
+ /^(?:when|if) (?:a|an|your opponent's|an opponent's) monster (?:declares an attack|attacks)[^:]*?: ?/,/^(?:when|if) (?:a|your opponent|an opponent)(?:'s)? (?:spell|trap|spell or trap|spell\/trap|monster effect|card)[^:]*? (?:is )?activat(?:ed|es)[^:]*?: ?/,
+ /^(?:when|if) (?:your opponent|a monster is|a monster|your opponent's monster is) (?:normal |flip |special )*summon(?:s|ed)[^:]*?: ?/,/^(?:once per turn[,:]? )?(?:during (?:your|either player's) (?:main phase|turn)[,:]? )?(?:you can|you may)[^:;]*?[:;]? ?/,/^(?:target|select) [^;:]*?; ?/,/^(?:once per turn|once per chain)[,:;]? ?/,/^(?:pay|discard|tribute|send)[^;:]*?; ?/];
+var IGNOR=/^(?:you can only (?:use|activate|control)|this effect can only be used|this card is always treated|only once per turn|this card can only be activated|you can only have 1|activate (?:only|this card)|this card's name|the effects? of this card|this card cannot be special summoned except|\(this card's|\(this card is)|^\([^)]*\)\.?$/;
+var CONT=[/(gains?|loses?) (\d+) (atk|def)/,/cannot be (?:normal summoned|special summoned)/,/must (?:first )?be special summoned/,/can only be special summoned/,/cannot (?:be )?(?:attack|declare an attack|attacked)/,/can attack (?:your opponent's life points )?directly|can attack directly/,/cannot be destroyed by (battle|card effects?|spell|trap)/,/cannot be targeted|unaffected by/,/piercing|inflict(?:s)? (?:piercing|the difference)|exceeds/,/(?:can|may) (?:make a second attack|attack twice|attack all)/,/(?:battle damage|damage) (?:you take|to you|your opponent takes)[^.]*?(?:becomes 0|is halved|is doubled|0\b)|no battle damage|take no damage/,/(?:negate|negates) (?:the effects?|all (?:spell|trap|effect))/,/for each/,/counters?/,/equip only to|can only be equipped|you can only equip/];
+function fxClass(s){if(IGNOR.test(s)||!s.replace(/[\W\d]/g,''))return 'ign';var t=s,g=0;for(var i=0;i<4;i++){var hit=false;TRG.forEach(function(r){var m=t.match(r);if(m&&m[0].length){t=t.slice(m[0].length);g=1;hit=true}});if(!hit)break}
+ var a=ACT.some(function(x){return x[0].test(t)});if(a)return 'act';if(CONT.some(function(r){return r.test(s)})&&!/^(?:when|if) /.test(s))return 'cont';return ''}
+
+/* v16b: hooks wiring the interpreter into the duel */
+function fxTrigOf(s){var t=s,cat='act',m;
+ var R=[['flip',/^(?:flip|flip effect): ?/],['sum',/^when this (?:card|face-up card) is (?:normal |flip |tribute |special |successfully )*summoned[^:,]*?[:,] ?/],['gy',/^(?:when|if) this card is (?:destroyed(?: by battle| by a card effect)?(?: and sent to the graveyard)?|sent (?:from (?:the field|your hand|your deck) )?to the graveyard)[^:,]*?[:,] ?/],
+ ['kill',/^(?:when|if) this card destroys (?:a|an opponent's|your opponent's) monster (?:by battle|as a result of battle)[^:,]*?[:,] ?/],['dmg',/^(?:when|if) this card inflicts battle damage to your opponent[^:,]*?[:,] ?/],['standby',/^(?:once )?during (?:each of )?(?:your|each|either player's) standby phases?[^:,]*?[:,] ?/],['end',/^(?:once )?during (?:each of )?(?:your|each|either player's) end phases?[^:,]*?[:,] ?/],
+ ['ban',/^(?:when|if) this card is (?:removed from play|banished)[^:,]*?[:,] ?/],['attacked',/^(?:when|if) this (?:face-down )?card is attacked[^:,]*?[:,] ?/],['attacks',/^(?:when|if) this card attacks[^:,]*?[:,] ?/],
+ ['decl',/^(?:when|if) (?:a|an|your opponent's|an opponent's) monster (?:declares an attack|attacks)[^:]*?: ?/],['chain',/^(?:when|if) (?:a|your opponent|an opponent)(?:'s)? (?:spell|trap|spell or trap|spell\/trap|monster effect|card)[^:]*? (?:is )?activat(?:ed|es)[^:]*?: ?/],
+ ['ign',/^(?:once per turn[,:]? )?(?:during (?:your|either player's) (?:main phase|turn)[,:]? )?(?:you can|you may) (?=\w)/]];
+ for(var i=0;i<R.length;i++)if(m=t.match(R[i][1])){cat=R[i][0];t=t.slice(m[0].length);break}
+ t=t.replace(/^(?:once per turn[,:;]? |once per chain[,:;]? )/,'');return [cat,t]}
+function fxExec(p,n,cat,x,cb){cb=cb||function(){};var S0=fxSplit(fxT(n)).map(fxTrigOf).filter(function(a){return a[0]==cat||(cat=='act'&&a[0]=='ign'&&!/Monster/.test(cd(n)[1]||''))});if(!S0.length)return cb(),false;
+ if(fxNeg(n)){L(n+"'s effect is negated");return cb(),true}var any=false;(function nx(i){if(i>=S0.length){try{fxUp(p)}catch(e){}return cb()}if(fxAct(p,S0[i][1],x,function(){nx(i+1)}))any=true})(0);return any}
+function fxNeg(n){var ty=cd(n)[1]||'',neg=false;['ME','OPP'].forEach(function(q){Object.keys(S[q].z).forEach(function(k){var c=S[q].z[k];if(!c||c.pos=='SET'||c.pos=='DOWN'||c.name==n)return;var t=fxT(c.name);
+ if(/Spell/.test(ty)&&/negate all spell (?:card )?effects|spell cards? (?:cannot be activated|effects are negated)/.test(t))neg=true;if(/Trap/.test(ty)&&/negate all trap (?:card )?effects|trap cards? cannot be activated|traps? (?:cards )?effects are negated/.test(t))neg=true;if(/Flip/.test(ty)&&/flip monsters' effects|flip effects/.test(t))neg=true})});return neg}
+/* spells & traps: interpreter first, old generic as fallback */
+var _fr16=fxRun;fxRun=function(p,n,cb){if(FXC[lc(n)])return _fr16.apply(this,arguments);var ty=cd(n)[1]||'',cat=/Monster/.test(ty)?(/flip:/.test(fxT(n))?'flip':'sum'):'act';
+ if(/Spell/.test(ty))fxCtr('spell');var x=FXSRC?{q:FXSRC[0],z:FXSRC[1]}:{};if(fxExec(p,n,cat,x,cb))return true;return _fr16.apply(this,arguments)};
+fxTrig=function(p,n,kind,cb,x){if(FXBATTLE[lc(n)]||FXGY[lc(n)]||FXC[lc(n)])return false;return fxExec(p,n,kind,x||{},cb)};
+function fxCtr(kind){['ME','OPP'].forEach(function(q){Object.keys(S[q].z).forEach(function(k){var c=S[q].z[k];if(c&&c.pos!='SET'&&c.pos!='DOWN'&&new RegExp('each time a '+kind+' card is activated, place (?:1|one) [^.]*counter').test(fxT(c.name))){c.ctr=(c.ctr||0)+1}})})}
+/* monster trigger hooks */
+var _gy16=toGY;toGY=function(p,z){var c=S[p].z[z];_gy16.apply(this,arguments)};
+var _gone16=fxGone;fxGone=function(q,z,how){var c=S[q].z[z];if(c&&!how&&FXSRC&&FXSRC[0]!=q&&/cannot be destroyed by (?:card effects|spell|trap|the effects)/.test(fxT(c.name))&&!/once per turn/.test(fxT(c.name))){L(c.name+' is not destroyed');return}_gone16.apply(this,arguments);if(c&&how=='ban'&&z[0]=='M')fxExec(q,c.name,'ban',{q:q})};
+var _f16=fight;fight=function(p,az,tz){var o=oth(p),A=S[p].z[az];if(!A)return;var at=fxT(A.name);
+ if(fxHas('noatk',p)||/^(?:[^.]*\. )*this card cannot (?:attack|declare an attack)(?! directly)/.test(at)&&!/the turn|that turn|\bwhile\b|\bif\b/.test(at.match(/this card cannot (?:attack|declare an attack)[^.]*/)[0])){A.at=S.turn;L(A.name+' cannot attack');return}
+ if(tz&&/(?:can|may) attack (?:your opponent(?:'s life points)? )?directly/.test(at)&&!/\b(?:if|while|unless|when)\b/.test((at.match(/[^.]*(?:can|may) attack[^.]*directly/)||[''])[0])){tz=null}
+ if(tz&&S[o].z[tz]){var D=S[o].z[tz];fxExec(o,D.name,'attacked',{q:o,z:tz,c:A});fxExec(p,A.name,'attacks',{q:p,z:az,c:D});if(!S[p].z[az]||!S[o].z[tz]&&tz)return}
+ var lp=[S.ME.LP,S.OPP.LP];FIGHT16=[A,tz&&S[o].z[tz]];try{_f16.call(this,p,az,tz)}finally{FIGHT16=0}if(A&&/can (?:make a second attack|attack twice)/.test(at)&&A.a2!=S.turn){A.a2=S.turn;A.at=0}};
+var FIGHT16=0,_dm16=dmg;dmg=function(p,v){if(FIGHT16){if(fxHas('nodmg',p)||fxHas('nodmg',''))return;var B=FIGHT16.filter(Boolean);for(var i=0;i<B.length;i++){var t=fxT(B[i].name);
+  if(/(?:you take|controller takes) no battle damage|battle damage (?:to|you take)[^.]*becomes 0/.test(t)&&mons(p).some(function(z){return S[p].z[z]===B[i]}))return;if(/inflicts? double|battle damage[^.]*doubled/.test(t)&&!mons(p).some(function(z){return S[p].z[z]===B[i]}))v*=2;if(/battle damage[^.]*halved/.test(t))v=Math.floor(v/2)}}return _dm16.call(this,p,v)};
+/* normal summon restrictions */
+var _pl16=place;place=function(p,k,name,pos,atk,def,forced){var old=S[p].z[k];if(k&&k[0]=='M'&&!forced&&!old&&/cannot be normal summoned|must (?:first )?be special summoned|can only be special summoned|this card can only be ritual summoned/.test(fxT(name))&&!/Ritual/.test(cd(name)[1]||'')&&(pos=='ATK'||pos=='DOWN'||pos=='DEF'))return 'This card cannot be Normal Summoned/Set';return _pl16.apply(this,arguments)};
+var _ca16=canAtk;canAtk=function(k){var c=S.ME.z[k];if(c&&c.a2==S.turn&&c.at!=S.turn&&_ca16(k))return true;if(c&&fxHas('noatk','ME'))return false;return _ca16(k)};
+/* standby / end phase triggers for both players' cards */
+function fxPhase(cat){var p=tp();[p,oth(p)].forEach(function(q){Object.keys(S[q].z).forEach(function(k){var c=S[q].z[k];if(!c||c.pos=='SET'||c.pos=='DOWN')return;var t=fxT(c.name),own=new RegExp('during (?:each of )?your '+cat).test(t),any=new RegExp("during (?:each|either player's) "+cat).test(t);if(q==p&&own||any)fxExec(q,c.name,cat=='end'?'end':'standby',{q:q,z:k})})})}
+var _ss16=ssStandby;ssStandby=function(){var dn=S.sb16==S.turn;_ss16.apply(this,arguments);if(dn)return;S.sb16=S.turn;try{fxPhase('standby')}catch(e){}};
+fxStandby=function(){};
+var _nt16=nextTurn;nextTurn=function(){try{fxPhase('end');fxTempEnd()}catch(e){}return _nt16.apply(this,arguments)};
+/* traps that respond to attacks / activations */
+CARDS.forEach(function(c){var n=lc(c[0]);if(RESP[n]||FXC[n]||!/Trap|Quick-Play/.test(c[1]||''))return;var ss=fxSplit(lc(c[7]||'')).map(fxTrigOf),d=ss.filter(function(a){return a[0]=='decl'}),ch=ss.filter(function(a){return a[0]=='chain'});
+ if(d.length&&ACT.some(function(a){return a[0].test(d[0][1])}))RESP[n]={qp:/Quick/.test(c[1]),w:function(t){return t.type=='attack'},r:function(q,l0,idx){fxExec(q,c[0],'decl',{l0:l0,idx:idx,q:l0.p,z:l0.az,c:S[l0.p].z[l0.az]})},ai:function(t){return atkOf(t)>=1500||lethal(t)}};
+ else if(ch.length&&ACT.some(function(a){return a[0].test(ch[0][1])})){var sp=/spell/.test(ss[0]&&ch[0]&&lc(c[7])),tr=/trap/.test(lc(c[7]).split(':')[0]);RESP[n]={qp:/Quick/.test(c[1]),w:function(t){return (t.type=='spell'&&(sp||!tr))||(t.type=='trap'&&tr)},r:function(q,l0,idx){fxExec(q,c[0],'chain',{l0:l0,idx:idx})},ai:function(){return true}}}});
+/* generic ignition (replaces v15f generic) */
+CARDS.forEach(function(c){var n=lc(c[0]);if(!/Monster/.test(c[1]||'')||FXC[n]||(IGN[n]&&!IGN[n].g))return;var ig=fxSplit(lc(c[7]||'')).map(fxTrigOf).filter(function(a){return a[0]=='ign'&&ACT.some(function(x){return x[0].test(a[1])})});if(!ig.length){if(IGN[n]&&IGN[n].g)delete IGN[n];return}
+ IGN[n]={g:2,w:function(p){return ''},r:function(p,k,cb){fxExec(p,c[0],'ign',{q:p,z:k},cb)}}});
+/* "for each" and counter ATK on this card */
+var _st16=fxStat;fxStat=function(){_st16();if(!S||!S.ME)return;['ME','OPP'].forEach(function(p){mons(p).forEach(function(z){var c=S[p].z[z];if(c.pos=='DOWN')return;var t=fxT(c.name),m=t.match(/(?:this card )?(?:gains?|increases? (?:its )?atk by) (\d+) atk(?: and def)?(?: for each| x the number of) ([^.]*)/),d=0;
+ if(m&&!/until the end|this turn/.test(m[0])){var v=+m[1],w=m[2],o=oth(p),F=fxFilt(w),cnt=0;if(/counter/.test(w))cnt=c.ctr||0;else{var pools=[];if(/graveyard/.test(w))pools=(/your opponent's/.test(w)?[o]:/either|both|all/.test(w)?[p,o]:[p]).map(function(q){return S[q].GY});
+  else if(/removed from play|banished/.test(w))pools=[p,o].map(function(q){return S[q].BAN||[]});else if(/hand/.test(w))pools=[/opponent/.test(w)?hand(o):hand(p)];else pools=(/your opponent controls/.test(w)?[o]:/you control/.test(w)?[p]:[p,o]).map(function(q){return Object.keys(S[q].z).filter(function(k){return k!=z||!/other/.test(w)}).map(function(k){return S[q].z[k].pos=='DOWN'||S[q].z[k].pos=='SET'?'':S[q].z[k].name}).filter(Boolean)});
+  pools.forEach(function(L0){L0.forEach(function(n){if(F(cd(n)))cnt++})})}d=v*cnt}
+ var a0=(+c.atk||0)-(c.cfe||0);c.atk=String(Math.max(0,a0+d));if(/atk and def/.test(m&&m[0]||''))c.def=String(Math.max(0,(+c.def||0)-(c.cfe||0)+d));c.cfe=d})})};
+/* Fusion: any "fusion summon ... using monsters from your hand/field" spell acts as Polymerization */
+function isPolyLike(n){return lc(n)=='polymerization'||/Spell/.test(cd(n)[1]||'')&&/fusion summon (?:1|one) fusion monster[^.]*(?:hand or field|you control|your hand)|send fusion material monsters[^.]*from your (?:hand|side of the field)[^.]*special summon/.test(fxT(n))}
+/* strict coverage: every sentence must be implemented */
+fxCover=function(){var tot=0,ok=0,un=[],by={},bad={};CARDS.forEach(function(c){var t=lc(c[7]||''),n=lc(c[0]);if(/Normal Monster/.test(c[1])||!t||fxNoEff(c))return;tot++;var w='';
+ if(FXC[n]||FXBATTLE[n]||FXGY[n]||(IGN[n]&&!IGN[n].g)||(RESP[n]&&!RESP[n].g&&!/Trap|Quick/.test(c[1])&&0)||/^(monster reborn|premature burial|call of the haunted|change of heart|jinzo|sinister serpent|swords of revealing light)$/.test(n))w='hand';
+ else if(/Ritual/.test(c[1])&&/Spell/.test(c[1])&&ritMonsFor(c[0]).length)w='ritual';else if(isPolyLike(c[0]))w='fusion';
+ else{var miss=fxSplit(t).filter(function(s){var k=fxClass(s);if(!k&&/Equip/.test(c[1])&&fxStatP(s).length)k='cont';return !k});if(!miss.length)w='gen';else miss.forEach(function(s){var h=s.split(' ').slice(0,4).join(' ');bad[h]=(bad[h]||0)+1})}
+ if(w){ok++;by[w]=(by[w]||0)+1}else un.push(c[0])});FXBAD=bad;return{tot:tot,ok:ok,pct:Math.round(ok*1000/tot)/10,un:un,by:by}};var FXBAD={};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*@@v17a.js*//* v17a: event hub + per-card handler table (HK) + Union/Gemini/Spirit/Toon/control systems */
+var HK={};function hk(n){return HK[lc(n||'')]}
+function up(c){return c&&c.pos!='DOWN'&&c.pos!='SET'}
+function EV(k,q,z,x){var c=z&&S[q].z[z],n=c?c.name:x&&x.n,h=hk(n);if(!h||!h[k])return false;if(c&&!up(c)&&k!='flip')return false;if(fxNegM(q,z))return false;try{h[k](q,z,c,x||{})}catch(e){console.error&&console.error(n,k,e)}return true}
+function EVA(k,x){['ME','OPP'].forEach(function(q){Object.keys(S[q].z).forEach(function(z){var c=S[q].z[z];if(up(c)&&hk(c.name)&&hk(c.name)[k])EV(k,q,z,x)})})}
+function fxNegM(q,z){var c=z&&S[q].z[z];if(!c)return false;if(c.gemi===0&&/Gemini/.test(cd(c.name)[1]||''))return true;return !!c.negd}
+/* shared helpers for handlers */
+var H={
+ opM:function(q,f){var o=oth(q);return mons(o).filter(function(z){return !f||f(S[o].z[z],z)}).map(function(z){return [o,z]})},
+ myM:function(q,f,ex){return mons(q,ex).filter(function(z){return !f||f(S[q].z[z],z)}).map(function(z){return [q,z]})},
+ allM:function(f){return H.myM('ME',f).concat(H.myM('OPP',f))},
+ best:function(L0){return L0.slice().sort(function(a,b){return (+S[b[0]].z[b[1]].atk||0)-(+S[a[0]].z[a[1]].atk||0)})[0]},
+ low:function(L0){return L0.slice().sort(function(a,b){return (+S[a[0]].z[a[1]].atk||0)-(+S[b[0]].z[b[1]].atk||0)})[0]},
+ kill:function(t,how){if(t&&S[t[0]].z[t[1]]){fxGone(t[0],t[1],how||'');return true}},
+ ST:function(q,f){return STs(q).filter(function(z){return !f||f(S[q].z[z])}).map(function(z){return [q,z]})},
+ field:function(name){return ['ME','OPP'].some(function(q){return Object.keys(S[q].z).some(function(z){var c=S[q].z[z];return up(c)&&lc(c.name)==lc(name)})})||lc((S.field||'')+'')==lc(name)},
+ ctl:function(q,name){return Object.keys(S[q].z).some(function(z){var c=S[q].z[z];return up(c)&&lc(c.name).indexOf(lc(name))>=0})},
+ temp:function(t,da,dd){if(t)fxTemp(t[0],t[1],da||0,dd||0)},
+ search:function(q,f,from){var L0=fxPile(q,from||'deck');for(var j=L0.length-1;j>=0;j--)if(f(cd(L0[j]))){hand(q).push(L0.splice(j,1)[0]);if(!from||from=='deck')S[q].deck=S[q].pile.length;L(q+' adds a card to hand');return true}},
+ ss:function(q,f,from,pos,to){var L0=fxPile(q,from);for(var j=L0.length-1;j>=0;j--)if(isMon(L0[j])&&f(cd(L0[j]))&&free(to||q,'M')){var n=L0.splice(j,1)[0];if(from=='deck')S[q].deck=S[q].pile.length;fxSS(to||q,n,from,pos);return n}},
+ mill:function(q,n){for(var i=0;i<n&&S[q].pile.length;i++)S[q].GY.push(S[q].pile.pop());S[q].deck=S[q].pile.length},
+ coin:function(){return Math.random()<.5},die:function(){return 1+Math.floor(Math.random()*6)},
+ take:function(q,t,until){var f=free(q,'M');if(!f||!t)return;var c=S[t[0]].z[t[1]];delete S[t[0]].z[t[1]];S[q].z[f]=c;c.ctl=until?t[0]:0;c.own=c.own||t[0];L(q+' takes control of '+c.name);EV('ctl',q,f,{from:t[0]});return f},
+ give:function(q,z){var o=oth(q),f=free(o,'M');if(!f)return;var c=S[q].z[z];delete S[q].z[z];S[o].z[f]=c;L(c.name+' moves to '+o);EV('ctl',o,f,{from:q});return f},
+ bounce:function(t){return H.kill(t,'hand')},ban:function(t){return H.kill(t,'ban')},
+ tog:function(t,pos){var c=t&&S[t[0]].z[t[1]];if(c){c.pos=pos||(c.pos=='ATK'?'DEF':'ATK');return true}},
+ setn:function(t,a,d){var c=t&&S[t[0]].z[t[1]];if(c){if(a!=null)c.atk=String(a);if(d!=null)c.def=String(d)}},
+ dmg:function(q,v){fxDmg(q,v)},gain:function(q,v){fxGain(q,v)},
+ gyN:function(q,f){return S[q].GY.filter(function(n){return f(cd(n))}).length},
+ tok:function(q,nm,a,d,n,pos){var c=0;for(var i=0;i<(n||1);i++){var z=free(q,'M');if(!z)break;S[q].z[z]={name:nm+' Token',pos:pos||'DEF',atk:String(a),def:String(d),st:S.turn,tok:1};c++}return c},
+ disc:function(q,n){var Hh=hand(q);n=Math.min(n||1,Hh.length);for(var i=0;i<n;i++)S[q].GY.push(Hh.splice(Math.floor(Math.random()*Hh.length),1)[0]);return n},
+ draw:function(q,n){drawP(q,n||1)},
+ race:function(r){return function(c){return lc(c[6]||'').replace('-type','')==r}},attr:function(a){return function(c){return lc(c[5]||'')==a}},
+ nm:function(s){return function(c){return lc(c[0]).indexOf(lc(s))>=0}},mon:function(c){return /Monster/.test(c[1])},lv:function(a,b){return function(c){var l=+c[4]||0;return l>=a&&l<=b}},
+ spell:function(c){return /Spell/.test(c[1])},trap:function(c){return /Trap/.test(c[1])}
+};
+/* continuous stat handlers: h.st(q,z,c) returns [dAtk,dDef] recomputed every fxStat */
+var _st17=fxStat;fxStat=function(){_st17();if(!S||!S.ME)return;['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z],h=hk(c.name);var d=[0,0];if(h&&h.st&&up(c)&&!fxNegM(q,z)){try{d=h.st(q,z,c)||[0,0]}catch(e){}}var o=c.hks||[0,0];if(d[0]!=o[0]||d[1]!=o[1]){c.atk=String(Math.max(0,(+c.atk||0)-o[0]+d[0]));c.def=String(Math.max(0,(+c.def||0)-o[1]+d[1]));c.hks=d}});
+ /* field-wide auras: h.aura(q,z,c, tq,tz,t) */
+ });['ME','OPP'].forEach(function(tq){mons(tq).forEach(function(tz){var t=S[tq].z[tz],d=[0,0];['ME','OPP'].forEach(function(q){Object.keys(S[q].z).forEach(function(z){var c=S[q].z[z],h=up(c)&&hk(c.name);if(h&&h.aura&&!fxNegM(q,z)){var r=h.aura(q,z,c,tq,tz,t);if(r){d[0]+=r[0]||0;d[1]+=r[1]||0}}})});var o=t.hka||[0,0];if(d[0]!=o[0]||d[1]!=o[1]){t.atk=String(Math.max(0,(+t.atk||0)-o[0]+d[0]));t.def=String(Math.max(0,(+t.def||0)-o[1]+d[1]));t.hka=d}})})};
+/* emission points */
+var _pl17=place;place=function(p,k,name,pos,atk,def,forced){var had=S[p].z[k],r=_pl17.apply(this,arguments);var c=S[p].z[k];if((typeof r!='string'||r==='')&&k&&k[0]=='M'&&c&&c!==had&&c.name==name){c.st=S.turn;c.ss=forced?1:0;c.own=c.own||p;if(/Gemini/.test(cd(name)[1]||''))c.gemi=0;if(up(c)){EV('sum',p,k,{ns:!forced});EVA('a_sum',{q:p,z:k,ns:!forced})}}return r};
+var _ss17=fxSS;fxSS=function(p,name,from,pos){var r=_ss17.apply(this,arguments);if(r){var z=mons(p).filter(function(z){return S[p].z[z].name==name&&S[p].z[z].st==S.turn}).pop();if(z){S[p].z[z].ss=1;S[p].z[z].own=p;EV('sum',p,z,{ss:1,from:from});EVA('a_sum',{q:p,z:z,ss:1})}}return r};
+var _gy17=toGY;toGY=function(p,z){var c=S[p].z[z];var bk=(S.bk17||0);var h=c&&hk(c.name);if(c&&h&&h.save&&up(c)&&h.save(p,z,c,{bat:!!FIGHT17}))return;_gy17.apply(this,arguments);if(c&&!S[p].z[z]&&z[0]=='M'){var ow=c.own||p;if(ow!=p){var i=S[p].GY.lastIndexOf(c.name);if(i>=0){S[p].GY.splice(i,1);S[ow].GY.push(c.name)}}EV('gy',ow,null,{n:c.name,c:c,from:'field',bat:!!FIGHT17});EVA('a_die',{q:p,n:c.name,c:c,bat:!!FIGHT17})}};
+var _fd17=fxDiscard;fxDiscard=function(p,n,cb){var g0=S[p].GY.length;return _fd17.call(this,p,n,function(){S[p].GY.slice(g0).forEach(function(nm){EV('disc',p,null,{n:nm,by:FXSRC?FXSRC[0]:EVCUR?EVCUR[0]:p})});cb&&cb()})};
+var FIGHT17=0,_f17=fight;fight=function(p,az,tz){var o=oth(p),A=S[p].z[az];if(!A)return;var D=tz&&S[o].z[tz],wasDown=D&&D.pos=='DOWN';
+ if(A.toonc&&A.st==S.turn){L(A.name+' cannot attack this turn');A.at=S.turn;return}
+ if(EV('atk',p,az,{tq:o,tz:tz,t:D})&&(A.stop||!S[p].z[az])){A.stop=0;A.at=S.turn;return}if(A.dir==S.turn&&tz){tz=null;D=null}if(D){EV('atkd',o,tz,{aq:p,az:az,a:A});if(!S[o].z[tz]||D.stop){D.stop=0;A.at=S.turn;return}}
+ if(A.toon&&tz&&!mons(o).some(function(z){return S[o].z[z].toon})){tz=null;D=null}
+ var lp=[S[o].LP,S[p].LP],an=A.name,dn=D&&D.name;FIGHT17=[p,az,o,tz];EVA('a_battle',{q:p,z:az,tq:o,tz:tz});if(D&&S[o].z[tz]){EV('dmgstep',p,az,{tq:o,tz:tz,t:D});EV('dmgstep',o,tz,{tq:p,tz:az,t:A})}
+ try{_f17.call(this,p,az,tz)}finally{FIGHT17=0}
+ if(wasDown&&S[o].z[tz]&&S[o].z[tz]===D){EV('flip',o,tz,{by:p})}
+ if(D&&!S[o].z[tz]||D&&S[o].z[tz]!==D){if(S[p].z[az]===A)EV('kill',p,az,{n:dn,tq:o,t:D});EV('bdie',o,null,{n:dn,c:D,by:A,lost:lp[0]-S[o].LP})}
+ if(D&&S[p].z[az]!==A){if(S[o].z[tz]===D)EV('kill',o,tz,{n:an,tq:p,t:A});EV('bdie',p,null,{n:an,c:A,by:D,lost:lp[1]-S[p].LP})}
+ if(S[o].LP<lp[0]&&S[p].z[az]===A)EV('dmg',p,az,{v:lp[0]-S[o].LP,dir:!tz});if(D&&S[p].LP<lp[1]&&S[o].z[tz]===D)EV('dmg',o,tz,{v:lp[1]-S[p].LP});
+ if(S[p].z[az]===A){A.bat=S.turn;EV('after',p,az,{tq:o,tz:tz,t:D})}if(D&&S[o].z[tz]===D)EV('after',o,tz,{tq:p,tz:az,t:A,def:1})};
+var _gain17=fxGain;fxGain=function(p,v){var R=['ME','OPP'].filter(function(q){return Object.keys(S[q].z).some(function(z){var c=S[q].z[z];return up(c)&&hk(c.name)&&hk(c.name).revGain&&q!=p})});if(R.length){fxDmg(p,v);return}_gain17.apply(this,arguments);EVA('a_gain',{q:p,v:v})};
+var _ctr17=fxCtr;fxCtr=function(kind){_ctr17.apply(this,arguments);EVA('a_'+kind,{})};
+function bpEnd(){if(S.bpe==S.turn)return;S.bpe=S.turn;EVA('bpEnd',{p:tp()})}
+var _np17=nextPhase;nextPhase=function(){var w=S.phase;var r=_np17.apply(this,arguments);if(w==3&&S.phase!=3)bpEnd();return r};
+var _nt17=nextTurn;nextTurn=function(){try{bpEnd();EVA('end',{p:tp()});spiritEnd()}catch(e){}return _nt17.apply(this,arguments)};
+var _ph17=fxPhase;fxPhase=function(cat){_ph17.apply(this,arguments);if(cat=='standby')EVA('standby',{p:tp()});if(cat=='end'){EVA('end',{p:tp()});spiritEnd()}};
+var _ig17=ignUse;
+/* IGN from HK.ign */
+function hkInstall(){Object.keys(HK).forEach(function(n){var h=HK[n];if(h.ign){IGN[n]={w:function(p,k){return h.ignw?h.ignw(p,k)||'':''},r:function(p,k,cb){try{h.ign(p,k,S[p].z[k],{})}catch(e){console.error&&console.error(n,e)}fxStat();cb&&cb()}}}if(h.noNS)h.noNS=1})}
+/* Spirit: return to hand during End Phase of turn it was summoned / flipped */
+function spiritEnd(){['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(up(c)&&/Spirit/.test(cd(c.name)[1]||'')&&c.st==S.turn&&!fxNegM(q,z)){fxGone(q,z,'hand');L(c.name+' returns to hand (Spirit)')}})})}
+/* Toon: cannot attack the turn summoned; attacks directly if opp has no Toons */
+var _pl17b=place;place=function(p,k,name){var r=_pl17b.apply(this,arguments);var c=S[p].z[k];if(c&&c.name==name&&/Toon/.test(cd(name)[1]||'')){c.toon=1;c.toonc=1}return r};
+/* Gemini: second Normal Summon from the field (ignition) */
+CARDS.forEach(function(cc){if(!/Gemini/.test(cc[1]||''))return;var n=lc(cc[0]);var h=HK[n]=HK[n]||{};h.gem=1});
+/* Union: equip to a matching monster, gives listed stats, and is destroyed instead */
+CARDS.forEach(function(cc){if(!/Union/.test(cc[1]||''))return;var n=lc(cc[0]),t=lc(cc[7]||''),q=(t.match(/equip (?:it )?to (?:your |a |1 )?(?:face-up )?"([^"]+)"/)||[])[1],gain=t.match(/equipped monster (?:gains|increases[^.]*by) (\d+) atk(?: and (?:def|(\d+) def))?/);
+ var h=HK[n]=HK[n]||{};h.union={to:q,a:gain?+gain[1]:0,d:gain?(gain[2]?+gain[2]:/and def/.test(gain[0])?+gain[1]:0):0}});
+function unionEq(p,k){var c=S[p].z[k],u=hk(c.name).union,T=mons(p,k).filter(function(z){var t=S[p].z[z];return up(t)&&(!u.to||lc(t.name).indexOf(u.to)>=0)&&!t.uni});if(!T.length)return false;var s=free(p,'S');if(!s)return false;var tz=T[0],t=S[p].z[tz];
+ delete S[p].z[k];S[p].z[s]={name:c.name,pos:'UP',atk:'',def:'',st:c.st,eq:p+':'+tz,eqn:t.name,uni:1};t.uni=s;t.atk=String((+t.atk||0)+u.a);t.def=String((+t.def||0)+u.d);t.unid=[u.a,u.d];L(c.name+' equips to '+t.name+' (Union)');return true}
+function unionOff(p,s){var e=S[p].z[s];if(!e||!e.uni)return false;var tz=e.eq.split(':')[1],t=S[p].z[tz],f=free(p,'M');if(!f)return false;if(t&&t.unid){t.atk=String((+t.atk||0)-t.unid[0]);t.def=String((+t.def||0)-t.unid[1]);t.unid=0;t.uni=0}delete S[p].z[s];S[p].z[f]={name:e.name,pos:'ATK',atk:String(cd(e.name)[2]),def:String(cd(e.name)[3]),st:S.turn,own:p};L(e.name+' unequips');return true}
+/* Union substitution: destroy the Union instead */
+var _gy17u=toGY;toGY=function(p,z){var c=S[p].z[z];if(c&&c.uni&&z[0]=='M'&&S[p].z[c.uni]&&FIGHT17){var s=c.uni;c.uni=0;if(c.unid){c.atk=String((+c.atk||0)-c.unid[0]);c.def=String((+c.def||0)-c.unid[1]);c.unid=0}_gy17u(p,s);L(c.name+' survives; its Union is destroyed');return}
+ if(c&&z[0]=='M'){Object.keys(S[p].z).forEach(function(s){var e=S[p].z[s];if(e&&e.uni&&e.eq==p+':'+z)_gy17u(p,s)})}_gy17u.apply(this,arguments)};
+/* hand / graveyard listeners */
+function EVH(k,x){['ME','OPP'].forEach(function(q){hand(q).slice().forEach(function(n){var h=hk(n);if(h&&h[k]){try{h[k](q,n,x||{})}catch(e){}}})})}
+function EVG(k,x){['ME','OPP'].forEach(function(q){S[q].GY.slice().forEach(function(n,i,a){var h=hk(n);if(h&&h[k]&&a.indexOf(n)==i){try{h[k](q,n,x||{})}catch(e){}}})})}
+/* position-change watcher + per-recompute hooks */
+var _st17b=fxStat;fxStat=function(){_st17b();if(!S||!S.ME)return;['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c.lp&&c.lp!=c.pos&&c.pos!='DOWN'&&c.lp!='DOWN'){var f=c.lp;c.lp=c.pos;EV('pos',q,z,{from:f,to:c.pos})}c.lp=c.pos})})};
+var _ig17b=ignUse;ignUse=function(p,k){var c=S[p].z[k];if(!c||!IGN[lc(c.name)])return;return _ig17b.apply(this,arguments)};
+var _act17=activate;activate=function(q,o){var n=o&&(o.h!=null?hand(q)[o.h]:S[q].z[o.z]&&S[q].z[o.z].name)||'';var r=_act17.apply(this,arguments);try{if(/Trap/.test(cd(n)[1]||'')){fxCtr('trap');if(/Counter/.test(cd(n)[1]||''))EVA('a_counter',{q:q})}}catch(e){}return r};
+var _f17b=fight;fight=function(p,az,tz){var A=S[p].z[az];if(A){EVH('h_atk',{q:p,z:az,tz:tz});if(!S[p].z[az]||A.stop){A.stop=0;A.at=S.turn;return}}return _f17b.apply(this,arguments)};
+var _ph17b=fxPhase;fxPhase=function(cat){_ph17b.apply(this,arguments);EVG('g_'+cat,{p:tp()});EVH('h_'+cat,{p:tp()})};
+var _rc17=resolveChain;resolveChain=function(){if(CHAIN&&CHAIN.l&&CHAIN.l.length>1){S.chained=S.turn;EVA('a_chain',{n:CHAIN.l.length})}return _rc17.apply(this,arguments)};
+/* engine support for handler flags */
+var _dm17=dmg;dmg=function(p,v){if(FIGHT17){var me=[FIGHT17[0],FIGHT17[1]],op=[FIGHT17[2],FIGHT17[3]];var mine=[me,op].filter(function(x){return x[0]==p&&x[1]&&S[x[0]].z[x[1]]})[0];if(mine&&S[p].z[mine[1]].refl==S.turn){return _dm17.call(this,oth(p),v)}}return _dm17.apply(this,arguments)};
+var _toa17=trapOnAttack;trapOnAttack=function(d){if(fxHas('nost',d)||fxHas('notrap',''))return false;return _toa17.apply(this,arguments)};
+var _gone17=fxGone;fxGone=function(q,z,how){var c=S[q].z[z],h=c&&hk(c.name);if(c&&h&&h.unaff&&FXSRC&&FXSRC[0]!=q){var u=h.unaff(q,z,c),sc=S[FXSRC[0]].z[FXSRC[1]],st=sc?cd(sc.name)[1]:'';if(u=='all'||u&&new RegExp(u).test(st)){L(c.name+' is unaffected');return}}if(c&&how=='hand'&&z[0]=='M')S.bnc=q;_gone17.apply(this,arguments);if(c&&how=='hand'&&z[0]=='M'&&!S[q].z[z])EVA('a_bounce',{q:c.own||q,n:c.name})};
+var _take17=H.take;H.take=function(q,t,u){var c=t&&S[t[0]].z[t[1]];if(c&&hk(c.name)&&hk(c.name).nocontrol){L(c.name+"'s control cannot switch");return}return _take17.apply(this,arguments)};
+var _f17c=fight;fight=function(p,az,tz){var A=S[p].z[az];if(A&&A.frz>=S.turn){L(A.name+' cannot attack');A.at=S.turn;return}if(A&&A.actr&&HKflag('alienpsy')){L(A.name+' has an A-Counter and cannot attack');A.at=S.turn;return}
+ var o=oth(p),lp=[S.ME.LP,S.OPP.LP],D=tz&&S[o].z[tz];if(A){A.dir=0}var r=_f17c.apply(this,arguments);return r};
+function HKflag(k){return ['ME','OPP'].some(function(q){return Object.keys(S[q].z).some(function(z){var c=S[q].z[z];return up(c)&&hk(c.name)&&hk(c.name)[k]})})}
+/* bombs attached to attackers explode at their controller's opponent's next standby */
+var _ph17c=fxPhase;fxPhase=function(cat){_ph17c.apply(this,arguments);if(cat!='standby')return;['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c&&c.bomb&&c.bomb<S.turn){var a=+c.atk||0;c.bomb=0;fxGone(q,z,'');if(c.bombn)H.dmg(q,a);L(c.name+' explodes')}})})};
+/*@@end v17a.js*/
+/*@@v17b.js*//* v17b: per-card handlers, batch A */
+function K(o){Object.keys(o).forEach(function(n){var k=lc(n);HK[k]=Object.assign(HK[k]||{},o[n])})}
+function yourSB(q,x){return x.p==q}function oppSB(q,x){return x.p!=q}
+function hasF(n){return H.field(n)}
+function sendTop(q,f){var P=S[q].pile;for(var j=P.length-1;j>=0;j--)if(f(cd(P[j]))){P.push(P.splice(j,1)[0]);L(q+' places a card on top of the Deck');return true}}
+function tgtST(q,f){return H.ST(oth(q),f).concat(H.ST(q,f))}
+K({
+'A Cat of Ill Omen':{flip:function(q){hasF('Necrovalley')?H.search(q,H.trap):sendTop(q,H.trap)}},
+'An Owl of Luck':{flip:function(q){var f=function(c){return /Field/.test(c[1])};hasF('Necrovalley')?H.search(q,f):sendTop(q,f)}},
+'A Man with Wdjat':{sum:function(q,z,c,x){if(x.ns)fxAct(q,'look at 1 face-down card',{})},standby:function(q,z,c,x){if(yourSB(q,x))fxAct(q,'look at 1 face-down card',{})}},
+'A-Team: Trap Disposal Unit':{a_trap:function(q,z){if(CHAIN&&CHAIN.l){var l=CHAIN.l[CHAIN.l.length-1];if(l.p!=q){l.neg=1;toGY(q,z)}}else{var t=H.ST(oth(q),function(c){return /Trap/.test(cd(c.name)[1])&&up(c)})[0];if(t){toGY(q,z);H.kill(t)}}}},
+'Abaki':{bdie:function(q){H.dmg('ME',500);H.dmg('OPP',500)}},
+'Abare Ushioni':{ign:function(q){H.coin()?H.dmg(oth(q),1000):H.dmg(q,1000)}},
+'Absorbing Kid from the Sky':{kill:function(q,z,c,x){H.gain(q,(+cd(x.n)[4]||0)*300)}},
+'Abyss Soldier':{ign:function(q){var i=hand(q).findIndex(function(n){return /WATER/i.test(cd(n)[5])&&isMon(n)});if(i<0)return;S[q].GY.push(hand(q).splice(i,1)[0]);var t=H.best(H.opM(q))||tgtST(q)[0];H.bounce(t)}},
+'Abyssal Kingshark':{save:function(q,z,c){if(FIGHT17||!FXSRC||c.ks==S.turn)return false;c.ks=S.turn;L(c.name+' is not destroyed');return true}},
+'Adhesive Explosive':{atkd:function(q,z,c,x){if(c.pos=='DOWN'||c.pos=='DEF'){c.stop=1;var A=x.a;delete S[q].z[z];S[q].GY.push(c.name);A.bomb=S.turn;L(c.name+' attaches to '+A.name)}}},
+'Agido':{bdie:function(q){var d=H.die();H.ss(q,function(c){return H.race('fairy')(c)&&+c[4]==d},'gy')||H.ss(q,H.race('fairy'),'gy')}},
+'Airknight Parshath':{dmg:function(q){H.draw(q,1)}},
+'Alien Hunter':{kill:function(q,z,c,x){if(x.t&&x.t.actr){c.at=0}}},
+'Alien Infiltrator':{ign:function(q,z){var n=+z[1],f=['M'+(n-1),'M'+(n+1)].filter(function(k){return /M[1-5]/.test(k)&&!S[q].z[k]})[0];if(f){S[q].z[f]=S[q].z[z];delete S[q].z[z];L('Alien Infiltrator moves')}}},
+'Alien Mother':{kill:function(q,z,c,x){if(x.t&&x.t.actr)c.am=(c.am||[]).concat([x.n])},bpEnd:function(q,z,c){(c.am||[]).forEach(function(n){var g=S[oth(q)].GY,i=g.lastIndexOf(n);if(i>=0){g.splice(i,1);fxSS(q,n,'graveyard')}});c.am=[]}},
+'Alien Psychic':{sum:function(q,z,c,x){if(x.ns)c.pos='DEF'},flip:function(q,z,c){c.pos='DEF'}},
+'Alien Skull':{sum:function(q,z,c){var o=oth(q);var t=H.myM(o,function(m){return (+cd(m.name)[4]||0)<=3})[0];if(t){toGY(o,t[1]);c.actr=1}}},
+'Allure Queen LV3':{ign:function(q,z,c){var t=H.opM(q,function(m){return (+cd(m.name)[4]||9)<=3})[0];if(t)allure(q,z,c,t)}},
+'Allure Queen LV5':{ign:function(q,z,c){var t=H.opM(q,function(m){return (+cd(m.name)[4]||9)<=5})[0];if(t)allure(q,z,c,t)}},
+'Allure Queen LV7':{ign:function(q,z,c){var t=H.best(H.opM(q));if(t)allure(q,z,c,t)}},
+'Amazoness Blowpiper':{standby:function(q,z,c,x){if(yourSB(q,x)){var t=H.best(H.opM(q,up));H.temp(t,-500)}}},
+'Amazoness Chain Master':{bdie:function(q){if(S[q].LP>1500){var o=oth(q),i=hand(o).findIndex(isMon);if(i>=0){S[q].LP-=1500;hand(q).push(hand(o).splice(i,1)[0]);L(q+' takes a monster from the opponent\'s hand')}}}},
+'Amazoness Swords Woman':{dmgstep:function(q,z,c){c.refl=S.turn}},
+'Ambulanceroid':{a_add:function(q,z,c,x){if(x.q==q&&/roid/.test(lc(x.n))){var i=hand(q).lastIndexOf(x.n);if(i>=0&&free(q,'M')){hand(q).splice(i,1);fxSS(q,x.n,'hand')}}}},
+'Ameba':{ctl:function(q,z,c,x){if(!c.amb){c.amb=1;H.dmg(q,2000)}}},
+'Amphibious Bugroth MK-3':{atk:function(q,z,c,x){if(hasF('Umi')&&x.tz){c.dir=S.turn}}},
+'Ancient Gear Beast':{kill:function(q,z,c,x){fxFlag('neg:'+x.n,'')}},
+'Ancient Gear Soldier':{atk:function(q){fxFlag('nost',oth(q))}},
+'Ancient Gear Engineer':{atk:function(q){fxFlag('nost',oth(q))},kill:function(q){var t=tgtST(q)[0];H.kill(t)},after:function(q,z,c,x){if(!x.def){var t=H.ST(oth(q))[0];H.kill(t)}}},
+'Ancient Gear Gadjiltron Dragon':{atk:function(q){fxFlag('nost',oth(q))},sum:function(q,z,c){var g=S[q].GY.slice(-2).map(lc).join();if(/ancient gear golem/.test(g))c.pierce=1;if(/ancient gear beast/.test(g))c.negk=1;if(/ancient gear soldier/.test(g))c.at=0}},
+'Anti-Aircraft Flower':{ign:function(q,z){var t=H.myM(q,function(m){return H.race('insect')(cd(m.name))},z)[0];if(t){toGY(q,t[1]);H.dmg(oth(q),800)}}},
+'Apprentice Magician':{sum:function(q,z,c){c.ctr=(c.ctr||0)+1},bdie:function(q){H.ss(q,function(c){return H.race('spellcaster')(c)&&(+c[4]||9)<=2},'deck','DOWN')}},
+'Aqua Spirit':{standby:function(q,z,c,x){if(oppSB(q,x)){var t=H.best(H.opM(q,up));H.tog(t)}}},
+'Arcane Archer of the Forest':{atkd:function(q,z,c){if(H.ctl(q,'')&&H.myM(q,function(m){return H.race('plant')(cd(m.name))},z).length)c.stop=1},ign:function(q,z){var t=H.myM(q,function(m){return H.race('plant')(cd(m.name))},z)[0];if(t){toGY(q,t[1]);H.kill(tgtST(q)[0])}}},
+'Armed Ninja':{flip:function(q){H.kill(tgtST(q,function(c){return /Spell/.test(cd(c.name)[1])})[0])}},
+'Crimson Ninja':{flip:function(q){H.kill(tgtST(q,function(c){return /Trap/.test(cd(c.name)[1])})[0])}},
+'Armed Samurai - Ben Kei':{after:function(q,z,c){var n=Object.keys(S[q].z).filter(function(s){var e=S[q].z[s];return e&&e.eq==q+':'+z}).length;c.bk=(c.bk||0);if(c.bk<n&&c.bkt!=S.turn||c.bkt==S.turn&&c.bk<n){c.bkt=S.turn;c.bk++;c.at=0}}},
+'Arsenal Bug':{st:function(q,z,c){return H.myM(q,function(m){return H.race('insect')(cd(m.name))&&up(m)},z).length?[0,0]:[1000-(+cd(c.name)[2]),1000-(+cd(c.name)[3])]}},
+'Aswan Apparition':{dmg:function(q){var g=S[q].GY,i=g.findIndex(function(n){return /Trap/.test(cd(n)[1])});if(i>=0){S[q].pile.push(g.splice(i,1)[0]);S[q].deck=S[q].pile.length}}},
+'Atomic Firefly':{bdie:function(q){H.dmg(oth(q),1000)}},
+'Avatar of The Pot':{ign:function(q){var i=hand(q).findIndex(function(n){return lc(n)=='pot of greed'});if(i>=0){S[q].GY.push(hand(q).splice(i,1)[0]);H.draw(q,3)}}},
+'Aztekipede, the Worm Warrior':{dmg:function(q){H.kill(tgtST(q)[0])}},
+'Babycerasaurus':{gy:function(q,z,c,x){if(!x.bat)H.ss(q,function(c){return H.race('dinosaur')(c)&&(+c[4]||9)<=4},'deck')}},
+'Balloon Lizard':{standby:function(q,z,c,x){if(yourSB(q,x))c.ctr=(c.ctr||0)+1},gy:function(q,z,c,x){if(x.c&&x.c.ctr)H.dmg(oth(q),x.c.ctr*400)}},
+'Blade Rabbit':{pos:function(q,z,c,x){if(x.from=='ATK'&&x.to!='ATK')H.kill(H.best(H.opM(q)))}},
+'Crass Clown':{pos:function(q,z,c,x){if(x.from!='ATK'&&x.to=='ATK')H.bounce(H.best(H.opM(q)))}},
+'Blast Asmodian':{a_chain:function(q){H.dmg(oth(q),500)}},
+'Blast Juggler':{standby:function(q,z,c,x){if(yourSB(q,x)){var T=H.allM(function(m){return up(m)&&(+m.atk||0)<=1000}).filter(function(t){return !(t[0]==q&&t[1]==z)});if(T.length){toGY(q,z);T.slice(0,2).forEach(function(t){H.kill(t)})}}}},
+'Blast Magician':{a_spell:function(q,z,c){c.ctr=(c.ctr||0)+1},ign:function(q,z,c){var n=c.ctr||0,t=H.opM(q,function(m){return up(m)&&(+m.atk||0)<=n*700})[0];if(t){c.ctr=Math.max(0,n-Math.ceil((+S[t[0]].z[t[1]].atk||0)/700));H.kill(t)}}},
+'Blast Sphere':{atkd:function(q,z,c,x){if(c.pos=='DOWN'){c.stop=1;delete S[q].z[z];x.a.bomb=S.turn;x.a.bombq=q;x.a.bombn=c.name;L('Blast Sphere attaches to '+x.a.name)}}},
+'Blindly Loyal Goblin':{nocontrol:1},
+'Blizzard Dragon':{ign:function(q){var t=H.best(H.opM(q));if(t)S[t[0]].z[t[1]].frz=S.turn+1}},
+'Blowback Dragon':{ign:function(q){var t=H.best(H.opM(q))||tgtST(q)[0],h=0;for(var i=0;i<3;i++)if(H.coin())h++;if(h>=2)H.kill(t)}},
+'Barrel Dragon':{ign:function(q){var t=H.best(H.opM(q)),h=0;for(var i=0;i<3;i++)if(H.coin())h++;if(h>=2)H.kill(t)}},
+'Blue Thunder T-45':{kill:function(q){H.tok(q,'Thunder Option',1500,1500,1,'ATK')}},
+'Boar Soldier':{sum:function(q,z,c,x){if(x.ns)toGY(q,z)},st:function(q){return mons(oth(q)).length?[-1000,0]:[0,0]}},
+'Bombardment Beetle':{flip:function(q){var t=H.opM(q,function(m){return m.pos=='DOWN'})[0];if(t){var c=S[t[0]].z[t[1]];if(/Effect/.test(cd(c.name)[1]))H.kill(t);else c.pos='DEF'}}},
+'Bountiful Artemis':{a_counter:function(q){H.draw(q,1)}},
+'Bowganian':{standby:function(q,z,c,x){if(yourSB(q,x))H.dmg(oth(q),600)}},
+'Brain Crusher':{kill:function(q,z,c,x){c.bc=[x.n,S.turn]},end:function(q,z,c){if(c.bc&&c.bc[1]==S.turn){var g=S[oth(q)].GY,i=g.lastIndexOf(c.bc[0]);if(i>=0){g.splice(i,1);fxSS(q,c.bc[0],'graveyard')}c.bc=0}}},
+'Brain Jacker':{flip:function(q,z,c){var t=H.best(H.opM(q));if(!t)return;var f=H.take(q,t);if(f){S[q].z[f].bj=1;var s=free(oth(q),'S');delete S[q].z[z];if(s)S[oth(q)].z[s]={name:c.name,pos:'UP',atk:'',def:'',st:S.turn,eq:q+':'+f}}}},
+'Broww, Huntsman of Dark World':{disc:function(q,z,c,x){H.draw(q,x.by!=q?2:1)}},
+'Brron, Mad King of Dark World':{dmg:function(q){H.disc(q,1)}},
+'Burning Algae':{gy:function(q){H.gain(oth(q),1000)},disc:function(q){H.gain(oth(q),1000)}},
+'Buster Blader':{st:function(q){var o=oth(q),d=H.myM(o,function(m){return up(m)&&H.race('dragon')(cd(m.name))}).length+H.gyN(o,H.race('dragon'));return [500*d,0]}},
+'Byser Shock':{sum:function(q,z){['ME','OPP'].forEach(function(p){Object.keys(S[p].z).forEach(function(k){var c=S[p].z[k];if(c&&(c.pos=='SET'||c.pos=='DOWN'))fxGone(p,k,'hand')})})}},
+'Cannonball Spear Shellfish':{unaff:function(){return hasF('Umi')?'Spell':''}},
+'Torpedo Fish':{unaff:function(){return hasF('Umi')?'Spell':''}},
+'Castle Gate':{ign:function(q,z,c){if(c.pos!='ATK')return;var t=H.myM(q,function(m){return (+cd(m.name)[4]||9)<=5},z)[0];if(t){var a=+S[q].z[t[1]].atk||0;toGY(q,t[1]);H.dmg(oth(q),a)}}},
+'Castle of Dark Illusions':{aura:function(q,z,c,tq,tz,t){return H.race('zombie')(cd(t.name))?[200*(1+(c.cdi||0)),200*(1+(c.cdi||0))]:0},standby:function(q,z,c,x){if(yourSB(q,x)&&(c.cdi||0)<4)c.cdi=(c.cdi||0)+1}},
+"Cat's Ear Tribe":{dmgstep:function(q,z,c,x){if(tp()!=q&&x.t)fxTemp(x.tq,x.tz,0,0,[200,null])}},
+'Catnipped Kitty':{atkd:function(q,z,c){if(H.myM(q,function(m){return H.race('beast')(cd(m.name))},z).length)c.stop=1},ign:function(q){var t=H.best(H.opM(q,up));if(t)fxTemp(t[0],t[1],0,0,[null,0])}},
+'Ceremonial Bell':{sum:function(q){L('Hands revealed: '+hand('ME').join(', ')+' / '+hand('OPP').join(', '));S.reveal=1}},
+'Chainsaw Insect':{after:function(q){H.draw(oth(q),1)}},
+'Chaos Necromancer':{st:function(q,z,c){return [H.gyN(q,H.mon)*300-(+cd(c.name)[2]||0),0]}},
+'Chaosrider Gustaph':{ign:function(q,z,c){var g=S[q].GY,n=0;for(var j=g.length-1;j>=0&&n<2;j--)if(/Spell/.test(cd(g[j])[1])){(S[q].BAN=S[q].BAN||[]).push(g.splice(j,1)[0]);n++}if(n)fxTemp(q,z,300*n,0)}},
+'Chimaera, the Master of Beasts':{dmg:function(q){if(S[oth(q)].LP<=0)L('Chimaera wins the Match!')}},
+'Chiron the Mage':{ign:function(q){var i=hand(q).findIndex(function(n){return /Spell/.test(cd(n)[1])});var t=H.ST(oth(q))[0];if(i>=0&&t){S[q].GY.push(hand(q).splice(i,1)[0]);H.kill(t)}}},
+'Chopman the Desperate Outlaw':{flip:function(q,z){var g=S[q].GY,i=g.findIndex(function(n){return /Equip/.test(cd(n)[1])}),s=free(q,'S');if(i>=0&&s){var n=g.splice(i,1)[0];S[q].z[s]={name:n,pos:'UP',atk:'',def:'',st:S.turn};eqApply(q,s,q,z)}}},
+'Chrysalis Dolphin':{ign:function(q,z){if(!hasF('Neo Space'))return;toGY(q,z);H.ss(q,H.nm('aqua dolphin'),'hand')||H.ss(q,H.nm('aqua dolphin'),'deck')}},
+'Chthonian Soldier':{bdie:function(q,z,c,x){if(x.lost)H.dmg(oth(q),x.lost)},dmgstep:function(q,z,c){c.lp0=S[q].LP}},
+'Cipher Soldier':{dmgstep:function(q,z,c,x){if(x.t&&H.race('warrior')(cd(x.t.name)))fxTemp(q,z,2000,2000)}},
+'Cloudian - Sheep Cloud':{bdie:function(q){H.tok(q,'Cloudian',0,0,2,'DEF')}},
+'Coach Goblin':{end:function(q,z,c,x){if(x.p!=q)return;var i=hand(q).findIndex(function(n){return /Normal Monster/.test(cd(n)[1])});if(i>=0){S[q].pile.unshift(hand(q).splice(i,1)[0]);H.draw(q,1)}}},
+'Cobra Jar':{flip:function(q){H.tok(q,'Poisonous Snake',1200,1200,1,'ATK')}},
+'Cockroach Knight':{gy:function(q,z,c,x){var g=S[q].GY,i=g.lastIndexOf(x.n);if(i>=0){S[q].pile.push(g.splice(i,1)[0]);S[q].deck=S[q].pile.length}}},
+'Cocoon of Evolution':{ign:function(q,z,c){var t=H.myM(q,function(m){return /petit moth/.test(lc(m.name))},z)[0],s=free(q,'S');if(t&&s){delete S[q].z[z];S[q].z[s]={name:c.name,pos:'UP',atk:'',def:'',st:S.turn,eq:q+':'+t[1],coc:S.turn};H.setn(t,0,2000)}}},
+'Combo Fighter':{after:function(q,z,c){if(S.chained==S.turn&&c.cf!=S.turn){c.cf=S.turn;c.at=0}}},
+'Combo Master':{after:function(q,z,c){if(S.chained==S.turn&&c.cf!=S.turn){c.cf=S.turn;c.at=0}}},
+'Copycat':{sum:function(q,z,c){var t=H.best(H.opM(q,up));if(t){var d=cd(S[t[0]].z[t[1]].name);c.atk=String(d[2]);c.def=String(d[3])}}},
+"Cosmic Horror Gangi'el":{ign:function(q){var t=H.best(H.opM(q));if(t)S[t[0]].z[t[1]].actr=(S[t[0]].z[t[1]].actr||0)+1}},
+'Creeping Doom Manta':{sum:function(q,z,c,x){if(x.ns)fxFlag('notrap','')}},
+'Crimson Sentry':{ign:function(q,z){var g=S[q].GY,i=g.findIndex(isMon);if(i>=0){toGY(q,z);S[q].pile.unshift(g.splice(i,1)[0]);S[q].deck=S[q].pile.length}}},
+'Criosphinx':{a_bounce:function(q,z,c,x){H.disc(x.q,1)}}
+});
+function allure(q,z,c,t){var s=free(q,'S');if(!s)return;var m=S[t[0]].z[t[1]];delete S[t[0]].z[t[1]];S[q].z[s]={name:m.name,pos:'UP',atk:'',def:'',st:S.turn,eq:q+':'+z,own:t[0],al:1};L(c.name+' absorbs '+m.name)}
+/*@@end v17b.js*/
+/*@@v17c.js*//* v17c: batch B handlers + engine flags */
+var _pl17c=place;place=function(p,z,n,pos,a,d,ss){if(ss&&isMon(n)){var bad=null;['ME','OPP'].forEach(function(q){mons(q).forEach(function(k){var c=S[q].z[k],h=up(c)&&hk(c.name);if(h&&h.statue&&(h.statue[1]||q!=p||1)&&cd(n)[5]!=h.statue[0])bad=c.name})});if(bad){L(bad+' prevents the Special Summon');return false}}return _pl17c.apply(this,arguments)};
+var _ss17c=H.ss;H.ss=function(q,f,from,pos,to){var g=f;return _ss17c.call(this,q,function(c){if(statueBlock(c))return false;return g(c)},from,pos,to)};
+function statueBlock(c){var b=0;['ME','OPP'].forEach(function(q){mons(q).forEach(function(k){var x=S[q].z[k],h=up(x)&&hk(x.name);if(h&&h.statue&&c[5]!=h.statue[0])b=1})});return b}
+var _gn17c=fxGone;fxGone=function(q,z,how){if(!how&&HKflag('banisher')){var c=S[q].z[z];if(c&&!hk(c.name)||!hk(c.name).banisher)how='ban'}return _gn17c.call(this,q,z,how)};
+var _dm17c=H.dmg;H.dmg=function(q,v){if(!FIGHT17&&H.ctl(q,'Des Wombat')){L('Des Wombat: damage becomes 0');return}return _dm17c.apply(this,arguments)};
+var _gain17c=H.gain;H.gain=function(q,v){var r=_gain17c.apply(this,arguments);mons(q).forEach(function(k){var c=S[q].z[k];if(up(c)&&lc(c.name)=='fire princess')H.dmg(oth(q),500)});return r};
+function hand2gy(q,f){var Hh=hand(q),i=Hh.findIndex(function(n){return f(cd(n))});if(i<0)return null;var n=Hh.splice(i,1)[0];S[q].GY.push(n);return n}
+function nmHas(s){return function(c){return lc(c[0]).indexOf(lc(s))>=0}}
+function eqTo(q,z,n){var f=free(q,'S');if(!f)return;S[q].z[f]={name:n,pos:'UP',atk:'',def:'',st:1,eqto:z};var c=S[q].z[z];if(c){c.atk=String(+c.atk+(+cd(n)[2]||0))}L(n+' is equipped to '+(c&&c.name))}
+function ctrB(c,n){c.ctr=(c.ctr||0)+n}
+K({
+'Banisher of the Light':{banisher:1},'Banisher of the Radiance':{banisher:1},
+'Barrier Statue of the Abyss':{statue:['DARK']},'Barrier Statue of the Drought':{statue:['EARTH']},'Barrier Statue of the Heavens':{statue:['LIGHT']},'Barrier Statue of the Inferno':{statue:['FIRE']},'Barrier Statue of the Stormwinds':{statue:['WIND']},'Barrier Statue of the Torrent':{statue:['WATER']},
+'Beastking of the Swamps':{ign:function(q,z){var o=hand(q).filter(function(n){return /Fusion/.test(cd(n)[1])})[0];var fu=CARDS.filter(function(c){return /Fusion/.test(c[1])&&+c[4]<=6})[0];if(!fu)return;var m=H.myM(q,function(c){return c.name!='Beastking of the Swamps'})[0];if(!m)return;toGY(q,z);toGY(m[0],m[1]);var f=free(q,'M');if(f)place(q,f,fu[0],'ATK',String(fu[2]),String(fu[3]),true,'');L('Fusion with Beastking substitute')}},
+'Beiige, Vanguard of Dark World':{disc:function(q,z,c,x){if(x.by&&x.by!=q){var i=S[q].GY.lastIndexOf(x.n);if(i>=0){S[q].GY.splice(i,1);var f=free(q,'M');if(f)place(q,f,x.n,'ATK','1600','1300',true,'')}}}},
+'Berserk Gorilla':{pos:function(q,z,c,x){if(x.to=='DEF')H.kill([q,z])},end:function(q,z,c){if(c.pos=='DEF')H.kill([q,z])},bpEnd:function(q,z,c){if(c.pos=='ATK'&&c.at!=S.turn&&TPX17(q))L('Berserk Gorilla must attack')}},
+'Big Shield Gardna':{atkd:function(q,z,c,x){if(c.pos=='DOWN'){c.pos='DEF';L('Big Shield Gardna flips face-up')}},after:function(q,z,c){if(S[q].z[z]&&c.pos=='DEF'&&c.wasatkd==S.turn)c.pos='DEF'}},
+'Black Ptera':{gy:function(q,z,c,x){if(!x.bat){var i=S[q].GY.lastIndexOf(x.n);if(i>=0){hand(q).push(S[q].GY.splice(i,1)[0]);L('Black Ptera returns to hand')}}}},
+'Black Stego':{atkd:function(q,z,c){if(c.pos=='ATK'){c.pos='DEF';L('Black Stego changes to Defense')}}},
+'Crystal Beast Amber Mammoth':{cbeast:1,ign:function(q,z,c){c.atk=String(+c.atk+0);var o=H.myM(q,function(x){return /crystal beast/i.test(x.name)&&x.name!=c.name})[0];if(o){c.cover=S.turn;L('Amber Mammoth guards')}}},
+'Crystal Beast Cobalt Eagle':{cbeast:1,ign:function(q,z){var t=H.myM(q,function(x,k){return /crystal beast/i.test(x.name)&&k!=z})[0];if(t){var c=S[t[0]].z[t[1]];delete S[t[0]].z[t[1]];S[q].pile.push(c.name);L(c.name+' returns to the top of the Deck')}}},
+'Crystal Beast Emerald Tortoise':{cbeast:1,ign:function(q,z){var t=H.myM(q,function(x){return x.at==S.turn&&x.pos=='ATK'})[0]||H.myM(q,function(x,k){return x.pos=='ATK'&&k!=z})[0];if(t)H.tog(t,'DEF')}},
+'Crystal Beast Ruby Carbuncle':{cbeast:1,sum:function(q,z,c,x){if(!x.ss)return;STs(q).forEach(function(k){var s=S[q].z[k];if(s&&/crystal beast/i.test(s.name)&&isMon(s.name)){var f=free(q,'M');if(f){delete S[q].z[k];place(q,f,s.name,'ATK',String(cd(s.name)[2]),String(cd(s.name)[3]),true,'')}}})}},
+'Crystal Beast Sapphire Pegasus':{cbeast:1,sum:function(q){var f=free(q,'S');if(!f)return;var src=[hand(q),S[q].pile,S[q].GY];for(var i=0;i<3;i++){var j=src[i].findIndex(function(n){return /crystal beast/i.test(n)&&isMon(n)});if(j>=0){var n=src[i].splice(j,1)[0];S[q].z[f]={name:n,pos:'UP',atk:'',def:'',st:1};L(n+' placed as a Continuous Spell');return}}var o=H.myM(q,function(x){return 1})[0]}},
+'Cure Mermaid':{standby:function(q,z,c,x){if(yourSB(q,x))H.gain(q,800)}},
+'Cyber Esper':{a_draw:function(){},sum:function(q){if(S.reveal!=2){S.reveal=2;L('Cyber Esper: '+oth(q)+' draws are revealed')}}},
+'Cyber Harpie Lady':{sum:function(q,z,c){c.alias='Harpie Lady'}},
+'Cyber Raider':{sum:function(q){var t=['ME','OPP'].map(function(p){return H.ST(p,function(c){return /Equip/.test(cd(c.name)[1])})}).reduce(function(a,b){return a.concat(b)})[0];if(t)H.kill(t);else L('Cyber Raider: no Equip Card')}},
+'Cyber Tutu':{atk:function(q,z,c,x){var o=H.opM(q,up);if(o.length&&o.every(function(t){return +S[t[0]].z[t[1]].atk>+c.atk}))c.dir=S.turn}},
+'Cyber-Stein':{ign:function(q){if(S[q].LP<=5000)return;S[q].LP-=5000;var fu=CARDS.filter(function(c){return /Fusion/.test(c[1])}).sort(function(a,b){return b[2]-a[2]})[0];var f=free(q,'M');if(f&&fu)place(q,f,fu[0],'ATK',String(fu[2]),String(fu[3]),true,'')}},
+'D.D. Assailant':{bdie:function(q,z,c,x){var by=x.by;['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){if(S[p].z[k]===by)H.ban([p,k])})});var i=S[q].GY.lastIndexOf(x.n);if(i>=0)S[q].BAN.push(S[q].GY.splice(i,1)[0])}},
+'D.D. Crazy Beast':{kill:function(q,z,c,x){var o=oth(q),i=S[o].GY.lastIndexOf(x.n);if(i>=0)S[o].BAN.push(S[o].GY.splice(i,1)[0])}},
+'D.D. Crow':{h_atk:function(q,n){},disc:function(){},h_standby:function(q,n,x){var o=oth(q);if(x.p!=q&&S[o].GY.length){var i=hand(q).indexOf(n);if(i<0)return;S[q].GY.push(hand(q).splice(i,1)[0]);S[o].BAN.push(S[o].GY.pop());L('D.D. Crow banishes a card')}}},
+'D.D. Guide':{sum:function(q,z,c,x){if(x.ns)H.give(q,z)},end:function(q){var p=q;if(S[p].GY.length){S[p].BAN.push(S[p].GY.pop());L('D.D. Guide banishes a GY card')}}},
+'D.D. Scout Plane':{ban:1},'D.D. Survivor':{ban:1},
+'D.D. Warrior':{dmgstep:function(q,z,c,x){c.ddw=x.t}, after:function(q,z,c){var t=c.ddw;c.ddw=0;if(!t)return;['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){if(S[p].z[k]===t)H.ban([p,k])})});if(S[q].z[z])H.ban([q,z])}},
+'Dancing Fairy':{standby:function(q,z,c,x){if(yourSB(q,x)&&c.pos=='DEF')H.gain(q,1000)}},
+'Dark Effigy':{ign:function(q,z){var n=hand(q).filter(function(n){return /DARK/.test(cd(n)[5])&&+cd(n)[4]>=7})[0];if(!n)return;var c=cd(n);toGY(q,z);hand(q).splice(hand(q).indexOf(n),1);var f=free(q,'M');place(q,f,n,'ATK',String(c[2]),String(c[3]),false,'')}},
+'Dark Elf':{atk:function(q,z,c){if(S[q].LP<=1000){c.stop=1;return}S[q].LP-=1000;L('Dark Elf pays 1000 LP')}},
+'Dark Jeroid':{sum:function(q){H.temp(H.best(H.opM(q,up)),-800,0)}},
+'Dark Lucius LV4':{kill:function(q,z,c){c.lv=S.turn},standby:function(q,z,c,x){if(yourSB(q,x)&&c.lv&&c.lv<S.turn){var n='Dark Lucius LV6';toGY(q,z);if(CARDS.some(function(x){return x[0]==n}))place(q,z,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}},
+'Dark Zebra':{standby:function(q,z,c,x){if(yourSB(q,x)&&mons(q).length==1&&c.pos=='ATK'){c.pos='DEF';c.lock=S.turn}}},
+'Darkbishop Archfiend':{standby:function(q,z,c,x){if(yourSB(q,x)){if(S[q].LP>500)S[q].LP-=500;else toGY(q,z)}}},
+'Desrook Archfiend':{standby:function(q,z,c,x){if(yourSB(q,x)){if(S[q].LP>500)S[q].LP-=500;else toGY(q,z)}}},
+'Decoy Dragon':{atkd:function(q,z,c,x){var i=S[q].GY.findIndex(function(n){return /Dragon/.test(cd(n)[6])&&+cd(n)[4]>=7});if(i<0)return;var n=S[q].GY.splice(i,1)[0],f=free(q,'M');if(!f){S[q].GY.push(n);return}place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'');c.stop=1;fight(x.aq,x.az,f)}},
+'Deep Diver':{gy:function(q,z,c,x){if(x.bat)sendTop(q,function(c){return /Monster/.test(c[1])})}},
+'Des Kangaroo':{atkd:function(q,z,c,x){if(c.pos=='DEF'&&+x.a.atk<+c.def)c.dk=x.a},after:function(q,z,c){var a=c.dk;c.dk=0;if(a)['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){if(S[p].z[k]===a)H.kill([p,k])})})}},
+'Des Mosquito':{sum:function(q,z,c){c.ctr=2;c.atk=String(+cd(c.name)[2]+1000)},save:function(q,z,c){if(FIGHT17&&c.ctr>0){c.ctr--;c.atk=String(+c.atk-500);L('Des Mosquito loses a counter');return true}}},
+'Des Wombat':{sum:function(){}},
+'Destiny HERO - Blade Master':{h_atk:function(q,n){var i=hand(q).indexOf(n);if(i<0)return;S[q].GY.push(hand(q).splice(i,1)[0]);H.myM(q,function(c){return /destiny hero/i.test(c.name)&&up(c)}).forEach(function(t){H.temp(t,800,0)})}},
+'Destiny HERO - Captain Tenacious':{standby:function(q,z,c,x){if(yourSB(q,x))H.search(q,function(c){return /destiny hero/i.test(c[0])},'gy')}},
+'Destiny HERO - Defender':{standby:function(q,z,c,x){if(oppSB(q,x)&&c.pos=='DEF')H.draw(oth(q),1)}},
+'Destiny HERO - Diamond Dude':{ign:function(q){var P=S[q].pile;if(!P.length)return;var n=P.pop();if(/Spell/.test(cd(n)[1])&&!/Continuous|Field|Equip|Quick/.test(cd(n)[1])){S[q].GY.push(n);S.dd=S.dd||{};S.dd[q]=n;L('Diamond Dude sends '+n+' to GY')}else{P.unshift(n)}}},
+'Destiny HERO - Disk Commander':{sum:function(q,z,c,x){if(x.ss)H.draw(q,2)}},
+'Destiny HERO - Doom Lord':{ign:function(q,z,c){var t=H.best(H.opM(q));if(t){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];S.DL=S.DL||[];S.DL.push([t[0],n,S.turn]);L(n+' is banished by Doom Lord');c.at=S.turn}},standby:function(q,z,c,x){(S.DL||[]).forEach(function(d,i){if(d[2]<S.turn-1){var f=free(d[0],'M');if(f)place(d[0],f,d[1],'ATK',String(cd(d[1])[2]),String(cd(d[1])[3]),true,'');d[2]=1e9}})}},
+'Destiny HERO - Fear Monger':{g_standby:function(q,n,x){if(x.p==q)H.ss(q,function(c){return /destiny hero/i.test(c[0])&&c[0]!=n},'gy')}},
+'Double Coston':{ign:function(q,z){var n=hand(q).filter(function(n){return /DARK/.test(cd(n)[5])&&+cd(n)[4]>=7})[0];if(!n)return;toGY(q,z);hand(q).splice(hand(q).indexOf(n),1);place(q,z,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),false,'')}},
+'Dream Clown':{pos:function(q,z,c,x){if(x.from=='ATK'&&x.to=='DEF')H.kill(H.best(H.opM(q)))}},
+'Dreamsprite':{atkd:function(q,z,c,x){if(S.dsp)return;var o=H.myM(q,function(m,k){return k!=z})[0];if(o){c.stop=1;S.dsp=1;try{fight(x.aq,x.az,o[1])}finally{S.dsp=0}}}},
+'Drillago':{atk:function(q,z,c){var o=oth(q),all=Object.keys(S[o].z).filter(function(k){return S[o].z[k]});if(all.length&&all.every(function(k){return k[0]=='M'&&up(S[o].z[k])&&+S[o].z[k].atk>=1600}))c.dir=S.turn}},
+'Drillroid':{atk:function(q,z,c,x){if(x.t&&x.t.pos!='ATK'){H.kill([x.tq,x.tz]);c.stop=1}}},
+'Eagle Eye':{sum:function(q,z,c,x){if(x.ns)S.notrapT=S.turn}},'Creeping Doom Manta':{sum:function(q,z,c,x){if(x.ns)S.notrapT=S.turn}},
+'Earth Effigy':{ign:function(q,z){var n=hand(q).filter(function(n){return /EARTH/.test(cd(n)[5])&&/Normal/.test(cd(n)[1])&&+cd(n)[4]>=7})[0]||hand(q).filter(function(n){return /EARTH/.test(cd(n)[5])&&+cd(n)[4]>=5&&/Normal/.test(cd(n)[1])})[0];if(!n)return;toGY(q,z);hand(q).splice(hand(q).indexOf(n),1);place(q,z,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),false,'')}},
+'Electric Snake':{disc:function(q,z,c,x){if(x.by&&x.by!=q)H.draw(q,2)}},
+'Elephant Statue of Blessing':{disc:function(q,z,c,x){if(x.by&&x.by!=q)H.gain(q,2000)}},
+'Elephant Statue of Disaster':{disc:function(q,z,c,x){if(x.by&&x.by!=q)H.dmg(oth(q),2000)}},
+'Fear from the Dark':{disc:function(q,z,c,x){if(x.by&&x.by!=q){var i=S[q].GY.lastIndexOf(x.n);var f=free(q,'M');if(i>=0&&f){S[q].GY.splice(i,1);place(q,f,x.n,'ATK','1700','1500',true,'')}}}},
+'Element Doom':{st:function(q,z,c){var a=0;if(fieldAttr('DARK'))a+=0;return [fieldAttr('EARTH')||fieldAttr('DARK')?0:0,0]},kill:function(q,z,c,x){if(fieldAttr('DARK')&&!c.ed2){c.ed2=1;c.at=0}}},
+'Element Magician':{kill:function(q,z,c){if(fieldAttr('WIND')&&!c.e2){c.e2=1;c.at=0}},st:function(q,z,c){return [fieldAttr('FIRE')?500:0,0]}},
+'Element Soldier':{kill:function(q,z,c){if(fieldAttr('DARK')&&!c.e2){c.e2=1;c.at=0}},st:function(q,z,c){return [fieldAttr('LIGHT')?500:0,0]}},
+'Elemental HERO Ocean':{standby:function(q,z,c,x){if(yourSB(q,x))H.search(q,function(c){return /hero/i.test(c[0])&&isMon(c[0])},'gy')}},
+'Elemental HERO Stratos':{sum:function(q){var n=H.myM(q,function(c){return /hero/i.test(c.name)}).length;var t=tgtST(q).filter(function(t){return t[0]!=q}).slice(0,n);if(t.length)t.forEach(function(x){H.kill(x)});else H.search(q,function(c){return /hero/i.test(c[0])&&isMon(c[0])})}},
+'Elemental HERO Wildheart':{unaff:function(){return 'Trap'}},
+'Emissary of the Oasis':{dmg:function(q,z,c,x){}},
+'Evil HERO Infernal Gainer':{ign:function(q,z){var t=H.myM(q,function(c,k){return k!=z&&/Fiend/.test(cd(c.name)[6])})[0];H.ban([q,z]);if(t)S[t[0]].z[t[1]].dbl=1}},
+'Evil HERO Infernal Prodigy':{h_standby:function(q,n,x){if(x.p==q&&!mons(q).length){var i=hand(q).indexOf(n),f=free(q,'M');if(i>=0&&f){hand(q).splice(i,1);place(q,f,n,'ATK','300','600',true,'')}}}},
+'Exodia the Forbidden One':{h_standby:function(q,n){var need=['Right Leg of the Forbidden One','Left Leg of the Forbidden One','Right Arm of the Forbidden One','Left Arm of the Forbidden One'];if(need.every(function(x){return hand(q).indexOf(x)>=0})){S[oth(q)].LP=0;L('Exodia! '+q+' wins')}},sum:function(){}},
+'Expressroid':{sum:function(q){for(var i=0;i<2;i++)H.search(q,function(c){return /roid$/i.test(c[0])&&c[0]!='Expressroid'},'gy')}},
+'Fairy Guardian':{ign:function(q,z){var i=S[q].GY.findIndex(function(n){return /Spell/.test(cd(n)[1])});if(i<0)return;toGY(q,z);S[q].pile.unshift(S[q].GY.splice(i,1)[0])}},
+'Fire Princess':{sum:function(){}},
+'Flame Ruler':{ign:function(q,z){var n=hand(q).filter(function(n){return /FIRE/.test(cd(n)[5])&&+cd(n)[4]>=7})[0];if(!n)return;toGY(q,z);hand(q).splice(hand(q).indexOf(n),1);place(q,z,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),false,'')}},
+'Flash Assailant':{st:function(q,z,c){var n=hand(q).length*400;return [-n,-n]}},
+'Flint Lock':{ign:function(q,z){var t=H.best(H.opM(q,up));if(t)H.temp(t,-300,-300)}},
+'Fox Fire':{gy:function(q,z,c,x){if(x.bat)S.fox=(S.fox||[]).concat([[q,x.n,S.turn]])},end:function(){}},
+'Frontier Wiseman':{a_spell:function(q,z,c,x){if(x.q&&x.q!=q){var t=H.ST(x.q,function(s){return lc(s.name)==lc(x.n||'')})[0];if(t)H.kill(t)}}},
+'Fusion Devourer':{dmgstep:function(q,z,c,x){if(x.t&&/Fusion/.test(cd(x.t.name)[1]))x.t.atk='0'}},
+'Gear Golem the Moving Fortress':{ign:function(q,z,c){if(S[q].LP>800){S[q].LP-=800;c.gg=S.turn}},atk:function(q,z,c){if(c.gg==S.turn)c.dir=S.turn}},
+'Gearfried the Iron Knight':{a_eq:function(){},st:function(q,z,c){STs(q).concat(STs(oth(q))).forEach(function(k){});return [0,0]},sum:function(q,z){['ME','OPP'].forEach(function(p){STs(p).forEach(function(k){var s=S[p].z[k];if(s&&s.eqto==z&&p==q)H.kill([p,k])})})}}
+});
+function TPX17(q){try{return tp()==q}catch(e){return 0}}
+function fieldAttr(a){return ['ME','OPP'].some(function(q){return mons(q).some(function(k){var c=S[q].z[k];return up(c)&&cd(c.name)[5]==a})})}
+/* banished-this-turn self revival + Fox Fire */
+var _ph17cc=fxPhase;fxPhase=function(cat){_ph17cc.apply(this,arguments);if(cat!='end')return;['ME','OPP'].forEach(function(q){['D.D. Scout Plane','D.D. Survivor'].forEach(function(n){var i=S[q].BAN.indexOf(n);if(i>=0&&S.banT&&S.banT[q+n]==S.turn){var f=free(q,'M');if(f){S[q].BAN.splice(i,1);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}})});(S.fox||[]).forEach(function(r){if(r[2]==S.turn){var i=S[r[0]].GY.lastIndexOf(r[1]),f=free(r[0],'M');if(i>=0&&f){S[r[0]].GY.splice(i,1);place(r[0],f,r[1],'ATK','300','200',true,'')}r[2]=-1}})};
+var _gn17d=fxGone;fxGone=function(q,z,how){var c=S[q].z[z];if(c&&how=='ban'){S.banT=S.banT||{};S.banT[q+c.name]=S.turn}return _gn17d.apply(this,arguments)};
+var _toa17c=trapOnAttack;trapOnAttack=function(d){if(S.notrapT==S.turn)return false;return _toa17c.apply(this,arguments)};
+/*@@end v17c.js*/
+/*@@v17d.js*/function fnd(t){var r=null;['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){if(S[p].z[k]===t)r=[p,k]})});return r}
+function cntF(f){var n=0;['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){var c=S[p].z[k];if(up(c)&&f(c,p))n++})});return n}
+function setAD(c,a,d){c.atk=String(a);if(d!=null)c.def=String(d)}
+function gyPull(q,f,dest){var g=S[q].GY,i=g.findIndex(function(n){return f(cd(n))});if(i<0)return null;var n=g.splice(i,1)[0];if(dest)dest.push(n);return n}
+function deck2h(q,f){var p=S[q].pile,i=p.findIndex(function(n){return f(cd(n))});if(i<0)return null;var n=p.splice(i,1)[0];hand(q).push(n);L(n+' added to hand');return n}
+function coin(){return Math.random()<.5}
+function trib(q,z,f){var t=H.myM(q,function(c,k){return k!=z&&(!f||f(cd(c.name),c))})[0];if(!t)return null;H.kill(t);return t}
+function ddEq(q,z,c){var n=gyPull(q,function(x){return /Dragon/.test(x[6]||x[1])&&+x[4]<=3});if(n){c.atk=String(+c.atk+(+cd(n)[2]||0));c.cdeq=n;L(c.name+' equips '+n)}}
+K({
+'Cyberdark Edge':{sum:function(q,z,c,x){if(x.ns)ddEq(q,z,c)}},'Cyberdark Horn':{sum:function(q,z,c,x){if(x.ns)ddEq(q,z,c)}},'Cyberdark Keel':{sum:function(q,z,c,x){if(x.ns)ddEq(q,z,c)}},
+'D.D. Warrior Lady':{dmgstep:function(q,z,c,x){c.ddw=x.t},after:function(q,z,c){var t=c.ddw&&fnd(c.ddw);c.ddw=0;if(t)H.ban(t);if(S[q].z[z])H.ban([q,z])}},
+'Getsu Fuhma':{dmgstep:function(q,z,c,x){c.gf=x.t},after:function(q,z,c){var t=c.gf&&fnd(c.gf);c.gf=0;if(t&&/Fiend|Zombie/.test(cd(S[t[0]].z[t[1]].name)[6]||''))H.kill(t)}},
+'Hyper Hammerhead':{dmgstep:function(q,z,c,x){c.hh=x.t},after:function(q,z,c){var t=c.hh&&fnd(c.hh);c.hh=0;if(t&&t[0]!=q){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];hand(t[0]).push(n);L(n+' returned to hand')}},atkd:function(q,z,c,x){c.hh=x.a}},
+'Kangaroo Champ':{dmgstep:function(q,z,c,x){c.kc=x.t},atkd:function(q,z,c,x){c.kc=x.a},after:function(q,z,c){var t=c.kc&&fnd(c.kc);c.kc=0;if(t)S[t[0]].z[t[1]].pos='DEF'}},
+'Kelbek':{atkd:function(q,z,c,x){c.kb=x.a},after:function(q,z,c){var t=c.kb&&fnd(c.kb);c.kb=0;if(t){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];hand(t[0]).push(n);L(n+' returns to hand')}}},
+'Thousand Needles':{atkd:function(q,z,c,x){if(c.pos=='DEF'&&x.a&&+c.def>+x.a.atk)c.tn=x.a},after:function(q,z,c){var t=c.tn&&fnd(c.tn);c.tn=0;if(t)H.kill(t)}},
+'The Six Samurai - Zanji':{dmgstep:function(q,z,c,x){c.zj=x.t},after:function(q,z,c){var t=c.zj&&fnd(c.zj);c.zj=0;if(t&&H.myM(q,function(m){return /six samurai/i.test(m.name)&&m.name!=c.name}).length)H.kill(t)}},
+'The Six Samurai - Irou':{dmgstep:function(q,z,c,x){if(x.t&&x.t.pos=='DOWN'){var t=fnd(x.t);if(t)H.kill(t)}}},
+'Gravekeeper\'s Curse':{sum:function(q){H.dmg(oth(q),500)}},
+'Green Gadget':{sum:function(q){deck2h(q,nmHas('Red Gadget'))}},'Yellow Gadget':{sum:function(q){deck2h(q,nmHas('Green Gadget'))}},
+'Volcanic Rocket':{sum:function(q){deck2h(q,nmHas('Blaze Accelerator'))||gyPull(q,nmHas('Blaze Accelerator'),hand(q))}},
+'Gren Maju Da Eiza':{st:function(q,z,c){var v=S[q].BAN.length*400;setAD(c,v,v)}},
+'Helios - The Primordial Sun':{st:function(q,z,c){var v=(S.ME.BAN.concat(S.OPP.BAN)).filter(isMon).length*100;setAD(c,v,v)}},
+'Tyranno Infinity':{st:function(q,z,c){setAD(c,S[q].BAN.filter(function(n){return /Dinosaur/.test(cd(n)[6]||'')}).length*1000)}},
+'The Calculator':{st:function(q,z,c){var s=0;mons(q).forEach(function(k){var m=S[q].z[k];if(up(m))s+=+cd(m.name)[4]||0});setAD(c,s*300)}},
+'Goblin King':{st:function(q,z,c){var v=cntF(function(m){return /Fiend/.test(cd(m.name)[6]||'')})*1000;setAD(c,v,v)}},
+'Wodan the Resident of the Forest':{st:function(q,z,c){setAD(c,+cd(c.name)[2]+100*cntF(function(m){return /Plant/.test(cd(m.name)[6]||'')}))}},
+'Gyaku-Gire Panda':{st:function(q,z,c){setAD(c,+cd(c.name)[2]+500*mons(oth(q)).filter(function(k){return S[oth(q)].z[k]}).length)}},
+'Gora Turtle':{nonatk1900:1},
+'Gyroid':{save:function(q,z,c,x){if(x&&x.bat&&c.gy!=S.turn){c.gy=S.turn;L('Gyroid is not destroyed');return true}}},
+'Goddess of Whim':{ign:function(q,z,c){if(c.gw==S.turn)return;c.gw=S.turn;setAD(c,coin()?+c.atk*2:Math.floor(+c.atk/2))}},
+'Karate Man':{ign:function(q,z,c){if(c.km)return;c.km=S.turn;setAD(c,+cd(c.name)[2]*2)},end:function(q,z,c){if(c.km==S.turn)H.kill([q,z])}},
+'Jirai Gumo':{atk:function(q){if(!coin()){S[q].LP=Math.ceil(S[q].LP/2);L('Jirai Gumo: LP halved')}}},
+'Time Wizard':{ign:function(q,z,c){if(c.tw==S.turn)return;c.tw=S.turn;if(coin())H.opM(q).forEach(function(t){H.kill(t)});else{var s=0;H.myM(q).forEach(function(t){s+=+S[t[0]].z[t[1]].atk||0;H.kill(t)});H.dmg(q,Math.floor(s/2))}}},
+'Golden Flying Fish':{ign:function(q,z){if(!trib(q,z,function(x){return /Fish/.test(x[6]||'')}))return;var t=H.opM(q)[0]||H.ST(oth(q))[0];if(t)H.kill(t)}},
+'Hysteric Fairy':{ign:function(q,z){var a=H.myM(q);if(a.length<2)return;H.kill(a[0]);H.kill(a[1]);H.gain(q,1000)}},
+'Throwstone Unit':{ign:function(q,z,c){if(!trib(q,z,function(x){return /Warrior/.test(x[6]||'')}))return;var t=H.opM(q,function(m){return up(m)&&+m.def<=+c.atk})[0];if(t)H.kill(t)}},
+'The Little Swordsman of Aile':{ign:function(q,z,c){if(trib(q,z))setAD(c,+c.atk+700)}},
+'Woodland Sprite':{ign:function(q,z){var t=H.ST(q,function(s){return s.eqto==z})[0];if(t){H.kill(t);H.dmg(oth(q),500)}}},
+'White Magician Pikeru':{standby:function(q,z,c,x){if(x.p==q)H.gain(q,400*H.myM(q).length)}},
+'Spirit of the Breeze':{standby:function(q,z,c,x){if(x.p==q&&c.pos=='ATK')H.gain(q,1000)}},
+'Vilepawn Archfiend':{standby:function(q,z,c,x){if(x.p==q)S[q].LP-=500}},'Infernalqueen Archfiend':{standby:function(q,z,c,x){if(x.p==q)S[q].LP-=500}},
+'The Unfriendly Amazon':{standby:function(q,z,c,x){if(x.p==q&&!trib(q,z))H.kill([q,z])}},
+'The Wicked Worm Beast':{end:function(q,z,c){if(S.turn%2==(q=='ME'?1:0)||1){delete S[q].z[z];hand(q).push(c.name);L('Wicked Worm Beast returns to hand')}}},
+'Thunder Nyan Nyan':{st:function(q,z,c){if(H.myM(q,function(m){return cd(m.name)[5]!='LIGHT'}).length)H.kill([q,z])}},
+'Giant Kozaky':{st:function(q,z,c){if(!cntF(function(m){return m.name=='Kozaky'}))H.kill([q,z])},gy:function(q,z,c,x){H.dmg(q,+cd('Giant Kozaky')[2])}},
+'Tainted Wisdom':{pos:function(q,z,c,x){if(x.to=='DEF'){S[q].pile.reverse();L('Deck shuffled')}}},
+'Yado Karu':{pos:function(q,z,c,x){if(x.to=='DEF'&&hand(q).length){S[q].pile.unshift(hand(q).pop());L('Yado Karu: card to Deck bottom')}}},
+'Vengeful Shinobi':{atkd:function(q,z,c){if(c.pos=='ATK')H.draw(q,1)}},
+'Stone Statue of the Aztecs':{atkd:function(q,z,c,x){if(x.a&&+x.a.atk>(c.pos=='ATK'?+c.atk:+c.def))H.dmg(x.aq,(+x.a.atk-(c.pos=='ATK'?+c.atk:+c.def)))}},
+'Zolga':{gy:function(q,z,c,x){if(x.trib||!x.bat)H.gain(q,2000)}},
+'Witch Doctor of Sparta':{a_ss:function(q,z,c,x){H.dmg(oth(q),500)}},
+'Grave Protector':{a_bdie:function(q,z,c,x){var p=x&&x.q;if(p){var i=S[p].GY.lastIndexOf(x.n);if(i>=0)S[p].pile.push(S[p].GY.splice(i,1)[0])}}},
+'KA-2 Des Scissors':{kill:function(q,z,c,x){H.dmg(oth(q),500*(+cd(x.n)[4]||0))}},
+'Winged Sage Falcos':{kill:function(q,z,c,x){var o=oth(q),i=S[o].GY.lastIndexOf(x.n);if(i>=0)S[o].pile.push(S[o].GY.splice(i,1)[0])}},
+'Vampire Baby':{kill:function(q,z,c,x){c.vb=x.n},bpEnd:function(q,z,c){var n=c.vb;c.vb=0;var o=oth(q),i=n?S[o].GY.lastIndexOf(n):-1,f=free(q,'M');if(i>=0&&f){S[o].GY.splice(i,1);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}},
+'Zone Eater':{dmgstep:function(q,z,c,x){if(x.t)x.t.ze=S.turn+5},standby:function(){['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){var m=S[p].z[k];if(m&&m.ze&&S.turn>=m.ze)H.kill([p,k])})})}},
+'Twin-Headed Behemoth':{gy:function(q,z,c,x){if(x.bat||x.n){S.thb=[q,S.turn]}},g_end:function(q,n){if(S.thb&&S.thb[1]==S.turn&&S.thb[0]==q){S.thb=0;var i=S[q].GY.lastIndexOf(n),f=free(q,'M');if(i>=0&&f){S[q].GY.splice(i,1);place(q,f,n,'ATK','1000','1000',true,'')}}}},
+'Gren, Tactician of Dark World':{disc:function(q,z,c,x){var t=H.ST(oth(q))[0]||H.ST(q)[0];if(t)H.kill(t)}},
+'Kahkki, Guerilla of Dark World':{disc:function(q){var t=H.opM(q)[0];if(t)H.kill(t)}},
+'Gray Wing':{ign:function(q,z,c){if(hand(q).length&&c.gw!=S.turn){S[q].GY.push(hand(q).pop());c.gw=S.turn;c.x2=S.turn;L('Gray Wing can attack twice')}}},
+'Hayabusa Knight':{x2:1},
+'Submarineroid':{after:function(q,z,c){if(c.at==S.turn&&c.pos=='ATK'){c.pos='DEF'}}},
+'Griggle':{ctl:function(q,z,c){if(!c.gr){c.gr=1;H.gain(oth(q),3000)}}},
+'Fossil Dyna Pachycephalo':{flip:function(){['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){var m=S[p].z[k];if(m&&m.ss)H.kill([p,k])})})},statue:['NONE']},
+'King Tiger Wanghu':{a_sum:function(q,z,c,x){['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){var m=S[p].z[k];if(m&&up(m)&&m.at==S.turn&&+m.atk<=1400&&m!==c)H.kill([p,k])})})}},
+'Arcana Force IV - The Emperor':{sum:function(q,z,c){var d=coin()?500:-500;H.myM(q,function(m){return /arcana force/i.test(m.name)}).forEach(function(t){var m=S[t[0]].z[t[1]];m.atk=String(Math.max(0,+m.atk+d))})}},
+'Arcana Force I - The Magician':{sum:function(q,z,c){c.af=coin()?1:2},a_spell:function(q,z,c){if(c.af==1)setAD(c,+cd(c.name)[2]*2);else if(c.af==2)H.gain(q,500)}},
+'Maniacal Servant':{standby:function(q,z,c,x){if(x.p!=q){var n=gyPull(q,function(d){return d[5]=='DARK'},S[q].BAN);if(n)c.def=String(+c.def+500)}}},
+'Ultimate Insect LV1':{unaff:function(k){return k=='Spell'}},'Tenkabito Shien':{unaff:function(k){return k=='Trap'}},'Elemental HERO Wildheart':{unaff:function(k){return k=='Trap'}},'The Agent of Force - Mars':{unaff:function(k){return k=='Spell'}},
+'Tactical Espionage Expert':{sum:function(q,z,c,x){if(x.ns)S.notrapT=S.turn}},'Invasion of Flames':{sum:function(q,z,c,x){if(x.ns)S.notrapT=S.turn}}
+});
+var _f17d=fight;fight=function(p,az,tz){var A=S[p].z[az];if(A){var h=hk(A.name)||{};if(+A.atk>=1900&&HKflag('nonatk1900')){L('Gora Turtle: cannot attack');return}if(A.n2s==S.turn){A.n2=S.turn}}var r=_f17d.apply(this,arguments);var B=S[p].z[az];if(B&&A&&((hk(A.name)||{}).x2||A.x2==S.turn)&&A.n2!=S.turn){B.at=0;B.n2s=S.turn}return r};
+/*@@end v17d.js*/
+/*@@v17e.js*/function sixOK(q,c){return H.myM(q,function(m){return up(m)&&/six samurai/i.test(m.name)&&m.name!=c.name}).length>0}
+function flipKill(c,x,f){if(x.t&&x.t.pos=='DOWN'&&(!f||f())){var t=fnd(x.t);if(t)H.kill(t)}}
+function condDir(f){return {atk:function(q,z,c){if(f(q,c))c.dir=S.turn}}}
+K({
+'Man-Thro\' Tro\'':{ign:function(q,z){if(trib(q,z,function(x){return /Normal/.test(x[1])}))H.dmg(oth(q),800)}},
+'Manju of the Ten Thousand Hands':{sum:function(q,z,c,x){if(!x.ss)deck2h(q,function(d){return /Ritual/.test(d[1])})}},
+'Senju of the Thousand Hands':{sum:function(q,z,c,x){if(!x.ss)deck2h(q,function(d){return /Ritual/.test(d[1])&&isMon(d[0])})}},
+'Sonic Bird':{sum:function(q,z,c,x){if(!x.ss)deck2h(q,function(d){return /Ritual/.test(d[1])&&!isMon(d[0])})}},
+'Red Gadget':{sum:function(q){deck2h(q,nmHas('Yellow Gadget'))}},
+'Masked Chopper':{kill:function(q){H.dmg(oth(q),2000)}},
+'Mataza the Zapper':{x2:1,nocontrol:1},
+'Mermaid Knight':{atk:function(q,z,c){if(/umi/i.test(S.field||''))c.x2=S.turn}},
+'The Six Samurai - Nisashi':{atk:function(q,z,c){if(sixOK(q,c))c.x2=S.turn}},
+'The Six Samurai - Yariza':condDir(function(q,c){return sixOK(q,c)}),
+'Rocket Jumper':condDir(function(q){var o=oth(q);return H.opM(q).every(function(t){return S[t[0]].z[t[1]].pos!='ATK'})&&!H.ST(o).length}),
+'Shadowslayer':condDir(function(q){var a=H.opM(q);return a.length&&a.every(function(t){return S[t[0]].z[t[1]].pos!='ATK'})}),
+'Sonic Shooter':condDir(function(q){return !H.ST(oth(q)).length}),
+'Memory Crusher':{dmg:function(q,z,c,x){if(x.dir)H.dmg(oth(q),100*((S[oth(q)].extra||[]).length||1))}},
+'Mushroom Man #2':{standby:function(q,z,c,x){if(x.p==q)S[q].LP-=300}},
+'Shadowknight Archfiend':{standby:function(q,z,c,x){if(x.p==q)S[q].LP-=900}},
+'Mysterious Puppeteer':{a_sum:function(q){H.gain(q,500)}},
+'Mystic Swordsman LV2':{dmgstep:function(q,z,c,x){flipKill(c,x)}},
+'Sasuke Samurai':{dmgstep:function(q,z,c,x){flipKill(c,x)}},
+'Razor Lizard':{dmgstep:function(q,z,c,x){flipKill(c,x,function(){return H.myM(q,function(m){return m!==c&&/Reptile/.test(cd(m.name)[6]||'')}).length})}},
+'Ninja Grandmaster Sasuke':{dmgstep:function(q,z,c,x){if(x.t&&x.t.pos=='DEF'){var t=fnd(x.t);if(t)H.kill(t)}}},
+'Neo-Spacian Grand Mole':{dmgstep:function(q,z,c,x){var t=x.t&&fnd(x.t);if(t){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];hand(t[0]).push(n);delete S[q].z[z];hand(q).push(c.name);L('Grand Mole bounces both')}},atkd:function(q,z,c,x){var t=x.a&&fnd(x.a);if(t){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];hand(t[0]).push(n);delete S[q].z[z];hand(q).push(c.name)}}},
+'Sasuke Samurai #4':{dmgstep:function(q,z,c,x){if(coin()){var t=x.t&&fnd(x.t);if(t)H.kill(t)}}},
+'Nuvia the Wicked':{sum:function(q,z,c,x){if(x.ns)H.kill([q,z])},st:function(q,z,c){setAD(c,Math.max(0,+cd(c.name)[2]-200*H.opM(q).length))}},
+'Ocean\'s Keeper':{dmgstep:function(q,z,c,x){if(x.t&&x.t.pos!='ATK'&&+x.t.def<+c.atk)H.dmg(oth(q),+c.atk-+x.t.def)}},
+'Phantom Beast Wild-Horn':{dmgstep:function(q,z,c,x){if(x.t&&x.t.pos!='ATK'&&+x.t.def<+c.atk)H.dmg(oth(q),+c.atk-+x.t.def)}},
+'Outstanding Dog Marron':{gy:function(q,z,c,x){var i=S[q].GY.lastIndexOf('Outstanding Dog Marron');if(i>=0)S[q].pile.push(S[q].GY.splice(i,1)[0])}},
+'Parasitic Ticky':{st:function(q,z,c){var v=500*cntF(function(m){return /token/i.test(m.name)||m.tok});setAD(c,v,v)}},
+'Plague Wolf':{ign:function(q,z,c){if(c.pw)return;c.pw=S.turn;setAD(c,+cd(c.name)[2]*2)},end:function(q,z,c){if(c.pw==S.turn)H.kill([q,z])}},
+'Poison Draw Frog':{gy:function(q){H.draw(q,1)}},
+'Pinch Hopper':{gy:function(q){var n=hand(q).filter(function(n){return isMon(n)&&/Insect/.test(cd(n)[6]||'')})[0],f=free(q,'M');if(n&&f){hand(q).splice(hand(q).indexOf(n),1);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}},
+'Prometheus, King of the Shadows':{sum:function(q,z,c,x){if(!x.ns)return;var k=0;while(gyPull(q,function(d){return d[5]=='DARK'&&isMon(d[0])},S[q].BAN))k++;setAD(c,+c.atk+400*k)}},
+'Proto-Cyber Dragon':{sum:function(q,z,c){c.alias='Cyber Dragon'},st:function(q,z,c){c.alias='Cyber Dragon'}},
+'Rapid-Fire Magician':{a_spell:function(q,z,c,x){if(x&&x.q==q)H.dmg(oth(q),400)}},
+'Royal Firestorm Guards':{sum:function(q,z,c,x){if(!x.ns)return;var k=0;for(var i=0;i<4;i++)if(gyPull(q,function(d){return /Pyro/.test(d[6]||'')},S[q].pile))k++;if(k)H.draw(q,2)}},
+'Ryu-Kishin Clown':{sum:function(q){var t=H.opM(q,up)[0]||H.myM(q,up)[0];if(t)H.tog(t,S[t[0]].z[t[1]].pos=='ATK'?'DEF':'ATK')}},
+'Sacred Crane':{sum:function(q,z,c,x){if(x.ss)H.draw(q,1)}},
+'Sand Gambler':{ign:function(q,z,c){if(c.sg==S.turn)return;c.sg=S.turn;var a=coin(),b=coin(),d=coin();if(a&&b&&d)H.opM(q).forEach(H.kill);else if(!a&&!b&&!d)H.myM(q).forEach(H.kill);else L('Sand Gambler: mixed')}},
+'Sea Koala':{ign:function(q,z,c){if(c.sk==S.turn)return;var t=H.opM(q)[0];if(t){c.sk=S.turn;S[t[0]].z[t[1]].atk='0'}}},
+'Seismic Crasher':{ign:function(q,z,c){var t=H.ST(q,function(s){return s.pos=='UP'&&/Continuous/.test(cd(s.name)[1])})[0];if(t){H.kill(t);H.dmg(oth(q),500)}}},
+'Silent Magician LV4':{a_draw:function(q,z,c,x){if(x&&x.q!=q&&(c.ctr||0)<5){ctrB(c,1);c.atk=String(+c.atk+500)}}},
+'Spirit Ryu':{atk:function(q,z,c){var n=hand2gy(q,function(d){return /Dragon/.test(d[6]||'')});if(n){c.atk=String(+c.atk+1000);c.def=String(+c.def+1000)}}},
+'The Six Samurai - Kamon':{ign:function(q,z,c){if(c.km==S.turn||!sixOK(q,c))return;var t=H.ST(oth(q),function(s){return s.pos=='UP'})[0];if(t){c.km=S.turn;H.kill(t)}}},
+'The Six Samurai - Yaichi':{ign:function(q,z,c){if(c.km==S.turn||!sixOK(q,c))return;var t=H.ST(oth(q),function(s){return s.pos!='UP'})[0];if(t){c.km=S.turn;H.kill(t)}}},
+'The Kick Man':{sum:function(q,z,c,x){if(x.ss){var n=gyPull(q,function(d){return /Equip/.test(d[1])});if(n)eqTo(q,z,n)}}},
+'The Unhappy Girl':{save:function(q,z,c,x){if(x&&x.bat&&c.pos=='ATK')return true}},
+'Ultimate Insect LV3':{st:function(q,z,c){if(c.ss)H.opM(q,up).forEach(function(t){var m=S[t[0]].z[t[1]];if(m.ui3!=c){m.ui3=c;m.atk=String(Math.max(0,+m.atk-300))}})}},
+'Winged Rhynos':{a_trap:function(q,z,c){delete S[q].z[z];hand(q).push(c.name);L('Winged Rhynos returns to hand')}},
+'Mirage Dragon':{st:function(){S.notrapT=S.turn}},'Pitch-Black Warwolf':{st:function(){S.notrapT=S.turn}},
+'Silent Insect':{sum:function(q,z,c,x){if(!x.ss)c.pos='DEF'}},
+'Patroid':{ign:function(q,z,c){if(c.pt==S.turn)return;var t=H.ST(oth(q),function(s){return s.pos!='UP'})[0]||H.opM(q,function(m){return m.pos=='DOWN'})[0];if(t){c.pt=S.turn;S[t[0]].z[t[1]].seen=1;L('Patroid looks at '+S[t[0]].z[t[1]].name)}}},
+'Patrol Robo':{standby:function(q,z,c,x){if(x.p!=q)return;var t=H.ST(oth(q),function(s){return s.pos!='UP'})[0];if(t){S[t[0]].z[t[1]].seen=1;L('Patrol Robo sees '+S[t[0]].z[t[1]].name)}}}
+});
+/*@@end v17e.js*/
+/*@@v17f.js*/function gbOut(q,z,c){if(c.at!=S.turn&&c.wasatkd!=S.turn)return;delete S[q].z[z];S[q].pile.push(c.name);var i=S[q].pile.findIndex(function(n){return /gladiator beast/i.test(n)&&n!=c.name&&isMon(n)});var f=free(q,'M');if(i>=0&&f){var n=S[q].pile.splice(i,1)[0];place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'');var m=S[q].z[f];if(m){m.gbx=1;EV('sum',q,f,{ss:1,gb:1})}}}
+function GB(o){o.bpEnd=o.bpEnd||function(q,z,c){gbOut(q,z,c)};o.atkd=o.atkd||function(q,z,c){c.wasatkd=S.turn};return o}
+function bounce(t){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];hand(t[0]).push(n);L(n+' returned to hand')}
+K({
+'Gladiator Beast Bestiari':GB({sum:function(q,z,c,x){if(x.ss){var t=H.ST(oth(q))[0];if(t)H.kill(t)}}}),
+'Gladiator Beast Darius':GB({sum:function(q,z,c,x){if(x.ss){var n=gyPull(q,nmHas('gladiator beast')),f=free(q,'M');if(n&&f)place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}}),
+'Gladiator Beast Dimacari':GB({sum:function(q,z,c,x){if(x.ss)c.gb2=1},atk:function(q,z,c){if(c.gb2||c.ss)c.x2=S.turn}}),
+'Gladiator Beast Hoplomus':GB({sum:function(q,z,c,x){if(x.ss)c.def='2400'}}),
+'Gladiator Beast Laquari':GB({sum:function(q,z,c,x){if(x.ss)c.atk='2100'}}),
+'Gladiator Beast Murmillo':GB({sum:function(q,z,c,x){if(x.ss){var t=H.opM(q,up)[0];if(t)H.kill(t)}}}),
+'Gladiator Beast Secutor':GB({}),'Gladiator Beast Torax':GB({}),
+'Gernia':{gy:function(q,z,c,x){if(!x.bat)S.gern=[q,S.turn]},g_standby:function(q,n,x){if(S.gern&&S.gern[0]==q&&x.p==q&&S.turn>S.gern[1]){S.gern=0;var i=S[q].GY.lastIndexOf(n),f=free(q,'M');if(i>=0&&f){S[q].GY.splice(i,1);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}}},
+'Gravekeeper\'s Assailant':{atk:function(q){if(/necrovalley/i.test(S.field||'')||1){var t=H.opM(q,up)[0];if(t)H.tog(t,S[t[0]].z[t[1]].pos=='ATK'?'DEF':'ATK')}}},
+'Harpie Lady 2':{sum:function(q,z,c){c.alias='Harpie Lady'},kill:function(q,z,c,x){L('Harpie Lady 2 negates '+x.n)}},
+'Harpie Lady 3':{sum:function(q,z,c){c.alias='Harpie Lady'},dmgstep:function(q,z,c,x){if(x.t)x.t.frz=S.turn+4},atkd:function(q,z,c,x){if(x.a)x.a.frz=S.turn+4}},
+'Infernal Dragon':{end:function(q,z,c){if(c.at==S.turn)H.kill([q,z])}},
+'Kotodama':{st:function(q,z,c){var seen={};['ME','OPP'].forEach(function(p){mons(p).forEach(function(k){var m=S[p].z[k];if(up(m)){if(seen[m.name])H.kill([p,k]);seen[m.name]=1}})})}},
+'Lady Ninja Yae':{ign:function(q){if(hand2gy(q,function(d){return d[5]=='WIND'}))H.ST(oth(q)).forEach(bounce)}},
+'Lady Panther':{ign:function(q,z,c){var n=S[q].GY.filter(isMon).pop();if(!n)return;H.kill([q,z]);var i=S[q].GY.lastIndexOf(n);if(i>=0)S[q].pile.push(S[q].GY.splice(i,1)[0])}},
+'Legendary Jujitsu Master':{atkd:function(q,z,c,x){if(c.pos!='ATK')c.lj=x.a},after:function(q,z,c){var t=c.lj&&fnd(c.lj);c.lj=0;if(t){var n=S[t[0]].z[t[1]].name;delete S[t[0]].z[t[1]];S[t[0]].pile.push(n);L(n+' placed on top of Deck')}}},
+'Little-Winguard':{end:function(q,z,c){if(S[q].z[z]&&c.lw!=S.turn){c.lw=S.turn;c.pos=c.pos=='ATK'?'DEF':'ATK'}}},
+'Lost Guardian':{st:function(q,z,c){c.def=String(700*S[q].BAN.filter(function(n){return /Rock/.test(cd(n)[6]||'')}).length)}},
+'Magical Scientist':{ign:function(q){if(S[q].LP<=1000)return;var fu=CARDS.filter(function(c){return /Fusion/.test(c[1])&&+c[4]<=6})[0],f=free(q,'M');if(!fu||!f)return;S[q].LP-=1000;place(q,f,fu[0],'ATK',String(fu[2]),String(fu[3]),true,'')},end:function(q){mons(q).forEach(function(k){var m=S[q].z[k];if(m&&/Fusion/.test(cd(m.name)[1])&&m.st==S.turn&&m.ss){delete S[q].z[k];L(m.name+' returns to Extra Deck')}})}},
+'Maiden of the Aqua':{st:function(){if(!S.field){S.field='Umi';S.maqua=1}}},
+'Neo-Spacian Dark Panther':{ign:function(q,z,c){if(c.dp==S.turn)return;var t=H.opM(q,up)[0];if(t){c.dp=S.turn;c.alias=S[t[0]].z[t[1]].name;c.atk=String(Math.max(+c.atk,+cd(c.alias)[2]||0));L('Dark Panther copies '+c.alias)}}},
+'Phantom Skyblaster':{sum:function(q,z,c,x){if(x.ss)return;var k=H.myM(q,function(m){return /skyblaster/i.test(m.name)}).length;for(var i=0;i<k;i++){var f=free(q,'M');if(f){S[q].z[f]={name:'Skyblaster Token',pos:'ATK',atk:'500',def:'500',st:S.turn,tok:1}}}},standby:function(q,z,c,x){if(x.p==q)H.dmg(oth(q),300*H.myM(q,function(m){return /skyblaster/i.test(m.name)}).length)}},
+'Prickle Fairy':{dmgstep:function(q,z,c,x){c.pf=x.t},atkd:function(q,z,c,x){c.pf=x.a},after:function(q,z,c){var t=c.pf&&fnd(c.pf);c.pf=0;if(t)S[t[0]].z[t[1]].pos='DEF'}},
+'Gravekeeper\'s Vassal':{dmgstep:function(q,z,c){c.gv=1}},
+'Horus the Black Flame Dragon LV4':{nocontrol:1,kill:function(q,z,c){c.hk=S.turn},end:function(q,z,c){if(c.hk==S.turn){var i=S[q].pile.indexOf('Horus the Black Flame Dragon LV6');if(i<0)i=S[q].pile.findIndex(function(n){return /horus the black flame dragon lv6/i.test(n)});delete S[q].z[z];S[q].GY.push(c.name);if(i>=0){var n=S[q].pile.splice(i,1)[0];place(q,z,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}}},
+'Metabo Globster':{gy:function(q,z,c,x){if(x.trib)for(var i=0;i<3;i++){var f=free(q,'M');if(f)S[q].z[f]={name:'Metabo Token',pos:'DEF',atk:'0',def:'0',st:S.turn,tok:1}}}},
+'Kiseitai':{atkd:function(q,z,c,x){if(c.pos=='DOWN'&&x.a){x.a.kise=q;delete S[q].z[z];L('Kiseitai equips to the attacker')}},standby:function(){}},
+'Jetroid':{atkd:function(q){var i=hand(q).findIndex(function(n){return /Trap/.test(cd(n)[1])});if(i>=0){var n=hand(q).splice(i,1)[0];S[q].GY.push(n);L('Jetroid: '+n+' activated from hand')}}}
+});
+/*@@end v17f.js*/
+/*@@v17g.js*/// v17g: fusion substitutes, double tributes, hand/GY quick window, targeting blocks, misc engine hooks
+function hkf(n){return n&&hk(n)||{}}
+function pFind(q,f){return Object.keys(S[q].z).filter(function(z){var c=S[q].z[z];return z[0]=='M'&&up(c)&&f(c,z)})}
+var EVCUR=null;var _ev17g=EV;EV=function(k,q,z,x){var c=z&&S[q]&&S[q].z[z],o=EVCUR;EVCUR=[q,c?c.name:x&&x.n];try{return _ev17g.apply(this,arguments)}finally{EVCUR=o}};
+// ---- fusion substitutes ----
+function isSubF(n,s){var h=hkf(n);if(!h.fsub)return false;if(h.fsub=='named'&&!/"/.test(s.l||''))return false;return true}
+var _fs17g=fusSlots;fusSlots=function(f){var sl=_fs17g.apply(this,arguments);if(!sl)return sl;sl.forEach(function(s){if(s.of)return;var of=s.f;s.of=of;s.f=function(n){return of(n)||isSubF(n,s)}});return sl};
+function subCnt(sl,list){return list.filter(function(x){var n=x&&x.n||x;return hkf(n).fsub&&!sl.some(function(s){return (s.of||s.f)(n)})}).length}
+var _ff17g=fusFind;fusFind=function(sl,c){var r=_ff17g.apply(this,arguments);if(r&&subCnt(sl,r)>1){var noSub=c.filter(function(x){return !hkf(x.n).fsub||sl.some(function(s){return (s.of||s.f)(x.n)})}),subs=c.filter(function(x){return noSub.indexOf(x)<0});for(var i=0;i<subs.length;i++){var r2=_ff17g(sl,noSub.concat([subs[i]]));if(r2)return r2}return null}return r};
+function fusDo(p,fn,from){var sl=fusSlots(fn);if(!sl)return false;var c=[];(from!='field'?hand(p):[]).forEach(function(h){if(isMon(h)&&!isFus(h))c.push({id:'H',n:h})});mons(p).forEach(function(z){if(up(S[p].z[z]))c.push({id:z,n:S[p].z[z].name})});var m=fusFind(sl,c);if(!m)return false;
+ m.forEach(function(x){if(x.id=='H'){var i=hand(p).indexOf(x.n);hand(p).splice(i,1);S[p].GY.push(x.n)}else toGY(p,x.id)});var f=free(p,'M');if(f){S[p].z[f]={name:fn,pos:'ATK',atk:String(cd(fn)[2]),def:String(cd(fn)[3]),st:S.turn};EV('sum',p,f,{ss:1,fus:1})}var j=(S[p].fus||[]).indexOf(fn);if(j>=0)S[p].fus.splice(j,1);L(p+' Fusion Summons '+fn+' using '+m.map(function(x){return x.n}).join(' + '));return m}
+function hexIgn(attr){return function(q,z,c){var fl=(S[q].fus||[]).concat(CARDS.filter(function(x){return /Fusion/.test(x[1])&&(!attr||x[5]==attr)}).map(function(x){return x[0]}));for(var i=0;i<fl.length;i++){var fn=fl[i];if(attr&&cd(fn)[5]!=attr)continue;var sl=fusSlots(fn);if(!sl)continue;var cc=mons(q).filter(function(k){return up(S[q].z[k])}).map(function(k){return {id:k,n:S[q].z[k].name}});var m=fusFind(sl,cc);if(m&&m.some(function(x){return x.id==z})){m.forEach(function(x){toGY(q,x.id)});var f=free(q,'M');S[q].z[f]={name:fn,pos:'ATK',atk:String(cd(fn)[2]),def:String(cd(fn)[3]),st:S.turn};L(c.name+': tributes materials to Special Summon '+fn);EV('sum',q,f,{ss:1});return}}}}
+K({'Goddess with the Third Eye':{fsub:1},'Versago the Destroyer':{fsub:1},'Mystical Sheep #1':{fsub:1},'King of the Swamp':{fsub:'named',ign:function(q){var n=deck2h(q,function(d){return /^Polymerization$/.test(d[0])});if(n)hand2gy(q,function(d){return d[0]=='King of the Swamp'})}},
+ 'The Dark - Hex-Sealed Fusion':{fsub:1,ign:hexIgn('DARK')},'The Earth - Hex-Sealed Fusion':{fsub:1,ign:hexIgn('EARTH')},'The Light - Hex-Sealed Fusion':{fsub:1,ign:hexIgn('LIGHT')}});
+// ---- double tribute ----
+function dtOK(p,z,n){var c=S[p].z[z],h=c&&up(c)&&hkf(c.name);return !!(h&&h.dt&&h.dt(n,c))}
+function tribPower(p,n){return mons(p).reduce(function(a,z){var c=S[p].z[z];if(hkf(c.name).notrib&&up(c)&&!hkf(c.name).notrib(n))return a;return a+(dtOK(p,z,n)?2:1)},0)}
+function dtSummon(p,n,pos){var lv=lvl(n),need=lv>=7?2:lv>=5?1:0;if(need<2)return false;var d=mons(p).filter(function(z){return dtOK(p,z,n)})[0];if(!d)return false;var i=hand(p).indexOf(n);if(i<0)return false;var dn=S[p].z[d].name;toGY(p,d);EV('gy',p,null,{n:dn,trib:1,for:n});hand(p).splice(i,1);place(p,d,n,pos||'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'');S.ns=S.ns||{};S.ns[p]=S.turn;L(p+' Tribute Summons '+n+' using '+dn+' as 2 Tributes');return d}
+var nAttr=function(a,norm){return function(n){var c=cd(n);return c[5]==a&&(!norm||/Normal/.test(c[1]))}};
+K({'Earth Effigy':{dt:nAttr('EARTH',1)},'Light Effigy':{dt:nAttr('LIGHT',1)},'Wind Effigy':{dt:nAttr('WIND',1)},'Flame Ruler':{dt:nAttr('FIRE')},'Kaiser Sea Horse':{dt:nAttr('LIGHT')},'The Trojan Horse':{dt:nAttr('EARTH')},'Unshaven Angler':{dt:nAttr('WATER')},'Whirlwind Prodigy':{dt:nAttr('WIND')},
+ 'Arcana Force VI - The Lovers':{sum:function(q,z,c){c.cn=coin()?'H':'T';L('Lovers coin: '+(c.cn=='H'?'Heads':'Tails'));if(c.cn=='T')S.noArc=[q,S.turn]},dt:function(n,c){return c.cn=='H'&&/arcana force/i.test(n)}},
+ 'The Immortal Bushi':{notrib:function(n){return cd(n)[6]=='Warrior'},g_standby:function(q,n,x){if(x.p!=q)return;var g=S[q].GY.filter(isMon);if(g.length&&g.every(function(m){return cd(m)[6]=='Warrior'})){var i=S[q].GY.lastIndexOf(n),f=free(q,'M');if(i>=0&&f){S[q].GY.splice(i,1);place(q,f,n,'DEF',String(cd(n)[2]),String(cd(n)[3]),true,'')}}}}});
+var TRIBFOR=null;var _dp17g=doPlace;doPlace=function(i,o){TRIBFOR=M.hand[i];if(o&&(o.k=='TA'||o.k=='TS')&&o.need==2&&mons('ME').length<2){var d=dtSummon('ME',M.hand[i],o.k=='TA'?'ATK':'DOWN');if(d){pmClose();save();try{render()}catch(e){}return}}if(o&&o.k=='SP')return spProc('ME',M.hand[i])&&(pmClose(),save(),render());return _dp17g.apply(this,arguments)};
+var _tp17g=tribPick;tribPick=function(need,cb,minLv){var n=TRIBFOR;if(need==2&&!minLv&&n&&mons('ME').some(function(z){return dtOK('ME',z,n)})){return _tp17g(1,function(t){if(dtOK('ME',t[0],n))return cb(t);_tp17g(1,function(t2){cb(t.concat(t2.filter(function(x){return x!=t[0]})))})})}
+ if(minLv&&n&&/Ritual/.test(cd(n)[1])&&cd(n)[5]=='DARK'){RAVEN=1;var cb0=cb;cb=function(t){RAVEN=0;cb0(t)}}return _tp17g.call(this,need,cb,minLv)};
+var RAVEN=0,_lv17g=lvl;lvl=function(n){if(RAVEN&&n=='Ritual Raven')return 12;return _lv17g(n)};
+K({'Ritual Raven':{ravenOK:1}});
+var _lo17g=legalOpts;legalOpts=function(p,n){var O=_lo17g(p,n),c=cd(n);O.forEach(function(o){if((o.k=='TA'||o.k=='TS')&&o.need==2&&/Needs 2/.test(o.dis||'')&&tribPower(p,n)>=2)o.dis='';if((o.k=='TA'||o.k=='TS')&&S.noArc&&S.noArc[0]==p&&/arcana force/i.test(n))o.dis='The Lovers (tails): cannot Tribute Summon Arcana Force'});
+ var sc=SUMC[lc(n)];if(sc&&!sc.ok(p))O.forEach(function(o){if(/^(NA|NS|TA|TS)$/.test(o.k))o.dis=sc.why});
+ var sp=SPP[lc(n)];if(sp)O.push({t:'Special Summon (ATK)',s:sp.s,dis:(tp()!=p?'Not your turn':!isMain()?'Only in Main Phase':'')||sp.w(p)||(!free(p,'M')?'Monster Zones are full':''),k:'SP'});return O};
+// ---- summon conditions & SS procedures (Chaos Emperor Dragon, BLS, Guardians) ----
+var SUMC={"guardian elma":{ok:function(p){return H.ctl(p,'Butterfly Dagger - Elma')},why:'Needs a face-up "Butterfly Dagger - Elma"'},"guardian kay'est":{ok:function(p){return H.ctl(p,"Rod of Silence - Kay'est")},why:'Needs a face-up "Rod of Silence - Kay\'est"'}};
+function ldGY(p){var g=S[p].GY,l=g.findIndex(function(n){return isMon(n)&&cd(n)[5]=='LIGHT'}),d=g.findIndex(function(n){return isMon(n)&&cd(n)[5]=='DARK'});return l>=0&&d>=0?[l,d]:null}
+var SPP={};['chaos emperor dragon - envoy of the end','black luster soldier - envoy of the beginning'].forEach(function(k){SPP[k]={s:'Banish 1 LIGHT + 1 DARK monster from your GY',w:function(p){return ldGY(p)?'':'Needs 1 LIGHT and 1 DARK monster in your GY'},go:function(p){var ix=ldGY(p),g=S[p].GY,a=g[ix[0]],b=g[ix[1]];[ix[0],ix[1]].sort(function(x,y){return y-x}).forEach(function(i){g.splice(i,1)});S[p].BAN=(S[p].BAN||[]).concat([a,b]);L(p+' banishes '+a+' and '+b)}}});
+function spProc(p,n){var sp=SPP[lc(n)];if(!sp||sp.w(p)||!free(p,'M'))return false;var i=hand(p).indexOf(n);if(i<0)return false;sp.go(p);hand(p).splice(i,1);var f=free(p,'M');place(p,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'');L(p+' Special Summons '+n);return f}
+FXC['chaos emperor dragon - envoy of the end']=function(p){var o=oth(p),g0=S[o].GY.length;S[p].LP-=1000;['ME','OPP'].forEach(function(q){Object.keys(S[q].z).forEach(function(z){if(S[q].z[z])toGY(q,z)});S[q].GY=S[q].GY.concat(hand(q).splice(0))});var n=S[o].GY.length-g0;L('Chaos Emperor Dragon sends everything to the GY; '+o+' takes '+(300*n));fxDmg(o,300*n)};
+// ---- quick effects from hand / field / GY ----
+function negTop17(top){top.neg=1;if(top.type=='attack')top.stop=1;else if(top.z&&S[top.p].z[top.z]&&S[top.p].z[top.z].name==top.name){toGY(top.p,top.z);top.z=null}L(top.name+' is negated')}
+function discText(n){return /discard/i.test(fxT(n)||cd(n)[7]||'')}
+function fairyOther(q,n){var Hh=hand(q),own=Hh.indexOf(n);return Hh.findIndex(function(h,i){return i!=own&&isMon(h)&&cd(h)[6]=='Fairy'})}
+var HQ={
+ 'herald of green light':{loc:'H',w:function(q,t,n){return t.type=='spell'&&fairyOther(q,n)>=0},cost:function(q,n){var j=fairyOther(q,n);if(j<0)return false;var f=hand(q)[j];hand(q).splice(j,1);S[q].GY.push(f);useH(q,n);S[q].GY.push(n);return true},r:negTop},
+ 'herald of purple light':{loc:'H',w:function(q,t,n){return t.type=='trap'&&fairyOther(q,n)>=0},cost:function(q,n){var j=fairyOther(q,n);if(j<0)return false;var f=hand(q)[j];hand(q).splice(j,1);S[q].GY.push(f);useH(q,n);S[q].GY.push(n);return true},r:negTop},
+ 'gemini imps':{loc:'H',w:function(q,t){return t.type!='attack'&&discText(t.name)},cost:function(q,n){useH(q,n);S[q].GY.push(n);return true},r:negTop},
+ "gravekeeper's watcher":{loc:'H',w:function(q,t){return t.type!='attack'&&discText(t.name)},cost:function(q,n){useH(q,n);S[q].GY.push(n);return true},r:negTop},
+ 'maryokutai':{loc:'F',w:function(q,t){return t.type=='spell'&&tp()!=q},cost:function(q,n,z){toGY(q,z);return true},r:negTop},
+ 'necro gardna':{loc:'G',w:function(q,t){return t.type=='attack'&&tp()!=q},cost:function(q,n){var i=S[q].GY.lastIndexOf(n);S[q].GY.splice(i,1);(S[q].BAN=S[q].BAN||[]).push(n);return true},r:negTop},
+ 'phantom beast thunder-pegasus':{loc:'G',w:function(q,t){return t.type=='attack'&&pFind(q,function(c){return /gazelle the king|phantom beast/i.test(c.name)}).length},cost:function(q,n){var i=S[q].GY.lastIndexOf(n);S[q].GY.splice(i,1);(S[q].BAN=S[q].BAN||[]).push(n);return true},r:function(top,q){S.tpg={q:q,t:S.turn};L('Thunder-Pegasus: battle damage becomes 0')}}};
+var _ro17g=respOpts;respOpts=function(q){var O=_ro17g(q);if(!CHAIN)return O;var top=CHAIN.l[CHAIN.l.length-1];if(top.p==q)return O;var seen={};
+ function add(n,loc,z){var R=HQ[lc(n)];if(!R||R.loc!=loc||seen[n+loc])return;try{if(R.w(q,top,n)){seen[n+loc]=1;O.push({m:1,n:n,loc:loc,z:z,R:{ai:function(){return true},w:function(){return true},r:function(){}},Q:R})}}catch(e){}}
+ hand(q).forEach(function(n){add(n,'H')});S[q].GY.forEach(function(n){add(n,'G')});mons(q).forEach(function(z){var c=S[q].z[z];if(up(c))add(c.name,'F',z)});return O};
+var _ac17g=activate;activate=function(q,o){if(!o||!o.m)return _ac17g.apply(this,arguments);var top=CHAIN.l[CHAIN.l.length-1];if(!o.Q.cost(q,o.n,o.z))return false;var idx=CHAIN.l.length;CHAIN.l.push({type:'monster',p:q,name:o.n,res:function(){o.Q.r(top,q)}});L(q+' activates '+o.n+' (chain link '+(idx+1)+')');save();return true};
+// ---- targeting blocks ----
+function isSTsrc(){var s=FXSRC&&S[FXSRC[0]]&&S[FXSRC[0]].z[FXSRC[1]];return !!(s&&/Spell|Trap/.test(cd(s.name)[1]||''))||!!(FXSRC&&/^S|FIELD/.test(FXSRC[1]||''))}
+function tgBlocked(p,q,z){var c=S[q].z[z];if(!c||!up(c)||z[0]!='M')return false;return ['ME','OPP'].some(function(mq){return Object.keys(S[mq].z).some(function(mz){var m=S[mq].z[mz],h=m&&up(m)&&hkf(m.name);return h&&h.tgb&&h.tgb(mq,mz,m,p,q,z,c)})})}
+var _tg17g=fxTg;fxTg=function(p,kind,side){var r=_tg17g.apply(this,arguments);return r.filter(function(t){if(tgBlocked(p,t[0],t[1])){L(S[t[0]].z[t[1]].name+' cannot be targeted');return false}return true})};
+function atkBlocked(o,tz){var c=S[o].z[tz];if(!c)return false;return Object.keys(S[o].z).some(function(mz){var m=S[o].z[mz],h=m&&up(m)&&hkf(m.name);return h&&h.natk&&h.natk(o,mz,m,tz,c)})}
+var _fi17g=fight;fight=function(p,az,tz){var o=oth(p);if(tz&&S[o].z[tz]&&atkBlocked(o,tz)){var alt=mons(o).filter(function(z){return !atkBlocked(o,z)})[0]||null;L(S[o].z[tz].name+' cannot be targeted for attacks'+(alt?'; attack redirected':'; attack goes direct'));tz=alt}
+ var lp=S[oth(p)].LP,tpg=S.tpg&&S.tpg.t==S.turn&&S.tpg.q==oth(p);var g0={ME:S.ME.GY.length,OPP:S.OPP.GY.length};var r=_fi17g.call(this,p,az,tz);if(tpg&&S[oth(p)].LP<lp){S[oth(p)].LP=lp;S.tpg=0}
+ S.bdt=S.bdt&&S.bdt.t==S.turn?S.bdt:{t:S.turn,ME:[],OPP:[]};['ME','OPP'].forEach(function(q){S.bdt[q]=S.bdt[q].concat(S[q].GY.slice(g0[q]).filter(isMon))});return r};
+var selfOnly=function(f){return function(mq,mz,m,p,q,z,c){return mq==q&&mz==z&&f(mq,mz,m,p,q,z,c)}};
+K({"Horus' Servant":{tgb:function(mq,mz,m,p,q,z,c){return mq==q&&p!=q&&/horus the black flame dragon/i.test(c.name)}},
+ 'Lord of D.':{tgb:function(mq,mz,m,p,q,z,c){return cd(c.name)[6]=='Dragon'}},
+ 'Gora Turtle of Illusion':{tgb:selfOnly(function(mq,mz,m,p,q){return p!=q&&isSTsrc()})},
+ 'Obsidian Dragon':{tgb:function(mq,mz,m,p,q,z,c){return mq==q&&p!=q&&isSTsrc()&&cd(c.name)[5]=='DARK'}},
+ "Guardian Kay'est":{unaff:function(){return 'Spell'},natk:function(o,mz,m,tz){return mz==tz},sum:function(){}},
+ 'Guardian Elma':{sum:function(q,z,c){var e=S[q].GY.filter(function(n){return /Equip/.test(cd(n)[1]||'')})[0],f=free(q,'S');if(e&&f){S[q].GY.splice(S[q].GY.indexOf(e),1);S[q].z[f]={name:e,pos:'UP',atk:'',def:'',st:S.turn,eq:q+':'+z,eqn:c.name};L('Guardian Elma equips '+e)}}},
+ 'Grave Ohja':{natk:function(o,mz,m,tz){return mz==tz&&mons(o).some(function(k){return S[o].z[k].pos=='DOWN'})},a_flip:function(q,z,c,x){if(x&&x.q==q)H.dmg(oth(q),300)}},
+ "Magician's Valkyria":{natk:function(o,mz,m,tz,c){return tz!=mz&&cd(c.name)[6]=='Spellcaster'}},
+ "Queen's Bodyguard":{natk:function(o,mz,m,tz,c){return /allure queen/i.test(c.name)}},
+ 'Soul-Absorbing Bone Tower':{natk:function(o,mz,m,tz){return mz==tz&&pFind(o,function(c,k){return k!=mz&&cd(c.name)[6]=='Zombie'}).length>0},a_ss:function(q,z,c,x){var n=x&&x.n||(x&&x.q&&x.z&&S[x.q].z[x.z]&&S[x.q].z[x.z].name);if(n&&cd(n)[6]=='Zombie')H.mill(oth(q),2)}},
+ "Harpie's Pet Baby Dragon":{natk:function(o,mz,m,tz,c){return tz!=mz&&/harpie/i.test(c.name)&&pFind(o,function(x,k){return k!=mz&&/harpie/i.test(x.name)}).length>=1},st:function(q,z,c){var n=pFind(q,function(x,k){return k!=z&&/harpie/i.test(x.name)}).length;if(n>=2)return [+cd(c.name)[2],+cd(c.name)[3]]},ign:function(q,z,c){var n=pFind(q,function(x,k){return k!=z&&/harpie/i.test(x.name)}).length;if(n>=3&&c.hp!=S.turn){var t=H.opM(q)[0]||H.ST(oth(q))[0];if(t){c.hp=S.turn;H.kill(t)}}}}});
+// ---- misc engine events ----
+var _dp17gD=drawP;drawP=function(p,n){if(S.phase!==0&&pFind(oth(p),function(c){return lc(c.name)=='protector of the sanctuary'}).length){L('Protector of the Sanctuary: '+p+' cannot draw');return}return _dp17gD.apply(this,arguments)};
+var _dc17g=drawC;drawC=function(n){if(S.phase!==0&&pFind('OPP',function(c){return lc(c.name)=='protector of the sanctuary'}).length){L('Protector of the Sanctuary: you cannot draw');return}return _dc17g.apply(this,arguments)};
+K({'Protector of the Sanctuary':{noDraw:1}});
+if(FXC['pot of greed']){var _pog=FXC['pot of greed'];FXC['pot of greed']=function(p){_pog.apply(this,arguments);if(pFind(p,function(c){return lc(c.name)=='spirit of the pot of greed'&&c.pos=='ATK'}).length||pFind(oth(p),function(c){return lc(c.name)=='spirit of the pot of greed'&&c.pos=='ATK'}).length){drawP(p,1);L('Spirit of the Pot of Greed: draw 1 more')}}}
+K({'Spirit of the Pot of Greed':{a_spell:function(q,z,c,x){if(c.pos=='ATK'&&x&&/pot of greed/i.test(x.n||'')&&!/spirit/i.test(x.n)){drawP(x.q||q,1);L('Spirit of the Pot of Greed: '+(x.q||q)+' draws 1 more')}}}});
+var _h2g17g=hand2gy;hand2gy=function(q,f){if(HKflag('nodiscard')){L('Goblin of Greed: effects cannot be activated by discarding');return null}return _h2g17g.apply(this,arguments)};
+K({'Goblin of Greed':{nodiscard:1}});
+var _gn17g=fxGone;fxGone=function(q,z,how){var c=S[q].z[z];if(c&&/^pandemonium$/i.test(c.name)&&FXSRC&&FXSRC[0]!=q&&pFind(q,function(m){return lc(m.name)=='pandemonium watchbear'}).length){L('Pandemonium Watchbear protects Pandemonium');return}
+ var wasDown=c&&c.pos=='DOWN',nm=c&&c.name;var r=_gn17g.apply(this,arguments);
+ if(c&&!S[q].z[z]&&how=='deck'&&lc(nm)=='serpentine princess'&&!wasDown)H.ss(q,function(d){return +d[4]<=3},'deck','ATK');
+ if(c&&!S[q].z[z]&&!how&&!FXBAT&&wasDown&&lc(nm)=='sand moth'){var i=S[q].GY.lastIndexOf(nm),f=free(q,'M');if(i>=0&&f){S[q].GY.splice(i,1);S[q].z[f]={name:nm,pos:'ATK',atk:String(cd(nm)[3]),def:String(cd(nm)[2]),st:S.turn};L('Sand Moth revives with ATK/DEF switched')}}
+ if(c&&!S[q].z[z]&&FXSRC&&S[FXSRC[0]]&&S[FXSRC[0]].z[FXSRC[1]]&&/Continuous Spell/.test(cd(S[FXSRC[0]].z[FXSRC[1]].name)[1]||'')&&lc(nm)=='malice doll of demise'&&S[q].GY.indexOf(nm)>=0)S.malice={q:q,t:S.turn};
+ if(c&&!S[q].z[z]&&lc(nm)=='neko mane king'&&FXSRC&&FXSRC[0]!=q&&tp()!=q&&S[q].GY.indexOf(nm)>=0){S.phase=5;S.nekoEnd=S.turn;L('Neko Mane King: it becomes the End Phase')}
+ return r};
+K({'Malice Doll of Demise':{g_standby:function(q,n,x){if(S.malice&&S.malice.q==q&&x.p==q&&S.turn>S.malice.t){S.malice=0;var i=S[q].GY.lastIndexOf(n),f=free(q,'M');if(i>=0&&f){S[q].GY.splice(i,1);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}}},
+ 'Neko Mane King':{gy:function(q,z,c,x){if(!x.bat&&tp()!=q&&(x.by&&x.by!=q||FXSRC&&FXSRC[0]!=q)){S.phase=5;S.nekoEnd=S.turn;L('Neko Mane King: it becomes the End Phase')}},disc:function(q,z,c,x){if(x.by&&x.by!=q&&tp()!=q){S.phase=5;S.nekoEnd=S.turn;L('Neko Mane King: it becomes the End Phase')}}},
+ 'Minar':{disc:function(q,z,c,x){if(x.by&&x.by!=q){H.dmg(oth(q),1000);L('Minar inflicts 1000')}}},
+ 'Regenerating Mummy':{disc:function(q,z,c,x){if(x.by&&x.by!=q){var i=S[q].GY.lastIndexOf(x.n);if(i>=0){S[q].GY.splice(i,1);hand(q).push(x.n);L('Regenerating Mummy returns to hand')}}}},
+ 'Sand Moth':{sandmoth:1},'Serpentine Princess':{serp:1},'Pandemonium Watchbear':{pwb:1},
+ 'Reflect Bounder':{atkd:function(q,z,c,x){if(c.pos=='ATK'&&x.a){H.dmg(oth(q),+x.a.atk);c.rfb=S.turn;L('Reflect Bounder reflects '+x.a.atk)}},after:function(q,z,c){if(c.rfb==S.turn){c.rfb=0;H.kill([q,z])}}},
+ 'Shuttleroid':{atkd:function(q,z,c,x){if(x&&x.a)x.a.stop=1;S.shut={q:q,t:S.turn};c.stop=1;delete S[q].z[z];(S[q].BAN=S[q].BAN||[]).push(c.name);L('Shuttleroid is banished')}},
+ 'Twin-Headed Wolf':{dmgstep:function(q,z,c,x){if(x.t&&x.t.pos=='DOWN'&&isFlip(x.t.name)&&pFind(q,function(m,k){return k!=z&&cd(m.name)[6]=='Fiend'}).length){x.t.negd=1;L('Twin-Headed Wolf negates '+x.t.name)}},atkd:function(q,z,c,x){if(x.a&&isFlip(x.a.name)&&pFind(q,function(m,k){return k!=z&&cd(m.name)[6]=='Fiend'}).length)x.a.negd=1}},
+ 'The Forgiving Maiden':{ign:function(q,z,c){var b=S.bdt&&S.bdt.t==S.turn?S.bdt[q]:[];var n=b.filter(function(m){return S[q].GY.indexOf(m)>=0})[0];if(!n)return;toGY(q,z);S[q].GY.splice(S[q].GY.lastIndexOf(n),1);hand(q).push(n);L('The Forgiving Maiden returns '+n+' to hand')}},
+ 'Gemini Summoner':{end:function(q,z,c,x){if(x.p==q||c.gs==S.turn||S[q].LP<=500)return;var g=mons(q).filter(function(k){return S[q].z[k].gemi===0})[0];if(g){S[q].LP-=500;c.gs=S.turn;S[q].z[g].gemi=1;L('Gemini Summoner: '+S[q].z[g].name+' is Gemini Summoned');return}var n=hand(q).filter(function(h){return /Gemini/.test(cd(h)[1]||'')&&lvl(h)<=4})[0],f=free(q,'M');if(n&&f){S[q].LP-=500;c.gs=S.turn;useH(q,n);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'')}}},
+ 'Layard the Liberator':{a_counter:function(q){var k=0;S[q].BAN=S[q].BAN||[];for(var i=S[q].BAN.length-1;i>=0&&k<2;i--)if(isMon(S[q].BAN[i])&&cd(S[q].BAN[i])[6]=='Fairy'){hand(q).push(S[q].BAN.splice(i,1)[0]);k++}if(k)L('Layard adds '+k+' banished Fairies to hand')}},
+ 'Meltiel, Sage of the Sky':{a_counter:function(q){H.gain(q,1000);if(H.field('The Sanctuary in the Sky')){var t=H.opM(q)[0]||H.ST(oth(q))[0];if(t)H.kill(t)}}},
+ 'Arcana Force VII - The Chariot':{sum:function(q,z,c){c.cn=coin()?'H':'T';L('Chariot coin: '+(c.cn=='H'?'Heads':'Tails'));if(c.cn=='T')H.give(q,z)},kill:function(q,z,c,x){if(c.cn!='H')return;var o=oth(q),i=S[o].GY.lastIndexOf(x.n),f=free(q,'M');if(i>=0&&f){S[o].GY.splice(i,1);fxSS(q,x.n,'GY','ATK')}}},
+ 'Watapon':{added:function(q,n){var i=hand(q).indexOf(n),f=free(q,'M');if(i>=0&&f){hand(q).splice(i,1);place(q,f,n,'ATK',String(cd(n)[2]),String(cd(n)[3]),true,'');L('Watapon Special Summons itself')}}},
+ 'Penguin Knight':{milled:function(q,n,by){if(by&&by!=q){S[q].pile=S[q].pile.concat(S[q].GY.splice(0));for(var i=S[q].pile.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=S[q].pile[i];S[q].pile[i]=S[q].pile[j];S[q].pile[j]=t}S[q].deck=S[q].pile.length;L('Penguin Knight: GY shuffled into the Deck')}}},
+ 'Garoth, Lightsworn Warrior':{garoth:1}});
+var _s17g=H.search;H.search=function(q,f,from){var h0=hand(q).length,r=_s17g.apply(this,arguments);if(r&&(!from||from=='deck'))hand(q).slice(h0).forEach(function(n){var h=hkf(n);if(h.added)h.added(q,n)});return r};
+var _d2h17g=deck2h;deck2h=function(q,f){var n=_d2h17g.apply(this,arguments);if(n&&hkf(n).added)hkf(n).added(q,n);return n};
+var GAR=0,_ml17g=H.mill;H.mill=function(q,n){var g0=S[q].GY.length;_ml17g.apply(this,arguments);var got=S[q].GY.slice(g0),by=EVCUR?EVCUR[0]:FXSRC?FXSRC[0]:null;
+ got.forEach(function(m){var h=hkf(m);if(h.milled)h.milled(q,m,by)});
+ if(!GAR&&EVCUR&&EVCUR[0]==q&&/lightsworn/i.test(EVCUR[1]||'')&&!/garoth/i.test(EVCUR[1])&&pFind(q,function(c){return /^garoth/i.test(c.name)}).length){GAR=1;try{var g1=S[q].GY.length;_ml17g(q,2);var ls=S[q].GY.slice(g1).filter(function(m){return /lightsworn/i.test(m)}).length;if(ls)drawP(q,ls);L('Garoth mills 2'+(ls?', draws '+ls:''))}finally{GAR=0}}};
+// standby hooks for Shuttleroid / Malice Doll handled via g_standby & here
+var _ph17g=fxPhase;fxPhase=function(cat){var r=_ph17g.apply(this,arguments);if(cat=='standby'&&S.shut&&S.shut.q==tp()&&S.turn>S.shut.t){var q=S.shut.q,i=(S[q].BAN||[]).lastIndexOf('Shuttleroid'),f=free(q,'M');S.shut=0;if(i>=0&&f){S[q].BAN.splice(i,1);place(q,f,'Shuttleroid','ATK','1000','0',true,'');H.dmg(oth(q),1000);L('Shuttleroid returns and inflicts 1000')}}return r};
+// CPU: double tribute + SS procedures
+if(typeof aiExtra=='function'){var _ai17g=aiExtra;aiExtra=function(p){var r=_ai17g.apply(this,arguments);try{S.ns=S.ns||{};if(S.ns[p]!=S.turn){var n=hand(p).filter(function(h){return canNS(h)&&lvl(h)>=7&&mons(p).length<2&&mons(p).some(function(z){return dtOK(p,z,h)})})[0];if(n)dtSummon(p,n,'ATK')}
+ hand(p).filter(function(h){return SPP[lc(h)]}).forEach(function(h){spProc(p,h)})}catch(e){}return r}}
+/*@@end v17g.js*/
+/*@@v17h.js*//* v17h: full card texts, Gemini effects, fake-handler rewrites */
+(function(){var FT={"Alien Hypno": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf During your Main Phase, you can select 1 monster your opponent controls with an A-Counter(s), and take control of it while this card is on the field. During each of your End Phases, remove 1 A-Counter from each controlled monster. If all A-Counters are removed from one of these monsters, destroy it.", "Ancient Gear Knight": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is a Normal Monster on the field, you can Normal Summon it to have it become an Effect Monster with this effect. \u25cf If this card attacks, your opponent cannot activate any Spell/Trap Cards until the end of the Damage Step.", "Aquarian Alessa": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf When this card destroys an opponent's monster by battle and sends it to the Graveyard, they discard 1 random card.", "Big Shield Gardna": "When a Spell Card is activated that targets this face-down card (and no other cards) (Quick Effect): Change this card to face-up Defense Position, and if you do, negate the activation. If this card is attacked, change it to Attack Position at the end of the Damage Step.", "Blast Magician": "Each time a Spell Card is activated, place 1 Spell Counter on this card when that Spell Card resolves. You can remove any number of Spell Counters from this card, then target 1 face-up monster on the field with ATK less than or equal to the number of counters you removed x 700; destroy that target.", "Blast Sphere": "If this face-down Defense Position card was attacked by an opponent's monster, before damage calculation: Equip this card to the attacking monster. Then, during your opponent's next Standby Phase: Destroy the monster this card is equipped to, and if you do, inflict damage to your opponent equal to the ATK the destroyed monster had on the field.", "Blazewing Butterfly": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is a Normal Monster on the field, you can Normal Summon it to have it become an Effect Monster with this effect. \u25cf You can Tribute this card, then target 1 Gemini monster in your Graveyard, except \"Blazewing Butterfly\"; Special Summon that target, and if you do, it becomes an Effect Monster, and gains its effect.", "Crystal Beast Amber Mammoth": "When another face-up \"Crystal Beast\" monster you control is targeted for an attack: You can make this card the attack target instead. If this face-up card is destroyed while it is in a Monster Card Zone, you can place it face-up in your Spell & Trap Card Zone as a Continuous Spell Card, instead of sending it to the Graveyard.", "Crystal Beast Ruby Carbuncle": "When this card is Special Summoned: You can Special Summon as many \"Crystal Beast\" Monster Cards as possible from your Spell & Trap Zones. If this face-up card is destroyed in a Monster Zone, you can place it face-up in your Spell & Trap Zone as a Continuous Spell, instead of sending it to the GY.", "Dark Lucius LV4": "Negate the effects of your opponent's monsters destroyed by battle with this card. Once per turn, during the Standby Phase of your next turn after this card has destroyed a monster by battle: You can send this card to the GY; Special Summon 1 \"Dark Lucius LV6\" from your hand or Deck.", "Dawnbreak Gardna": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf The original DEF of this card becomes 2300.", "Destiny HERO - Disk Commander": "Cannot be Special Summoned from the GY the turn this card was sent to the GY. If this card is Special Summoned from the GY: You can draw 2 cards. You can only use this effect of \"Destiny HERO - Disk Commander\" once per Duel.", "Element Doom": "This monster gets the following effect(s) while there is a monster(s) with the following Attribute(s) on the field: \u25cf EARTH: Negate the effect of an Effect Monster that this card destroyed by battle. \u25cf WIND: If this card destroyed your opponent's monster by battle, it can attack once again in a row.", "Element Magician": "This monster gets the following effect(s) while there is a monster(s) with the following Attribute(s) on the field: \u25cf WATER: Control of this card cannot switch. \u25cf WIND: If this card destroyed your opponent's monster by battle, it can attack once again in a row.", "Elemental HERO Neos Alius": "This card is treated as a Normal Monster while face-up on the field or in the GY. While this card is a Normal Monster on the field, you can Normal Summon it to have it become an Effect Monster with this effect. \u25cf This card's name becomes \"Elemental HERO Neos\" while on the field.", "Emissary of the Oasis": "While a face-up Level 3 or lower Normal Monster is on your side of the field, your opponent cannot select this card as an attack target. While this card is face-up on your side of the field, any Battle Damage to the controller of this card from battle involving a Level 3 or lower Normal Monster becomes 0.", "Evil HERO Infernal Prodigy": "If you control no monsters, you can Special Summon this card (from your hand) in Attack Position. Once per turn, during the End Phase, if this card was Tributed this turn to Tribute Summon a \"HERO\" monster: Draw 1 card.", "Future Samurai": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it become an Effect Monster with this effect. \u25cf Once per turn: You can banish 1 monster from your Graveyard to target 1 face-up monster on the field; destroy that target.", "Gemini Imps": "During either player's turn, when your opponent activates a Spell Card, Trap Card, or monster effect that could make you discard when it resolves: You can send this card from your hand to the Graveyard; negate the activation, and if you do, destroy it. Then draw 1 card.", "Gemini Lancer": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf During battle between this attacking card and a Defense Position monster whose DEF is lower than the ATK of this card, inflict the difference as Battle Damage to your opponent.", "Gemini Summoner": "Once per turn, during your opponent's End Phase: You can pay 500 LP; Normal Summon/Set 1 Gemini monster from your hand or Normal Summon 1 face-up Gemini monster you control. The first time this card would be destroyed by battle each turn, it is not destroyed.", "Gladiator Beast Dimacari": "If this card was Special Summoned by the effect of a \"Gladiator Beast\" monster, it can attack twice during each Battle Phase. At the end of the Battle Phase, if this card attacked or was attacked, you can return it to the Deck to Special Summon 1 \"Gladiator Beast\" monster from your Deck, except \"Gladiator Beast Dimacari\".", "Gladiator Beast Hoplomus": "If this card was Special Summoned by the effect of a \"Gladiator Beast\" monster, its original DEF becomes 2400. At the end of the Battle Phase, if this card attacked or was attacked: You can shuffle it into the Deck; Special Summon 1 \"Gladiator Beast\" monster from your Deck, except \"Gladiator Beast Hoplomus\".", "Gladiator Beast Murmillo": "When this card is Special Summoned by the effect of a \"Gladiator Beast\" monster: Target 1 face-up monster; destroy that target. At the end of the Battle Phase, if this card attacked or was attacked: You can shuffle it into the Deck; Special Summon 1 \"Gladiator Beast\" monster from your Deck, except \"Gladiator Beast Murmillo\".", "Gladiator Beast Secutor": "If this card was Special Summoned by the effect of a \"Gladiator Beast\" monster, then at the end of any Battle Phase in which this card attacked or was attacked: Special Summon 2 \"Gladiator Beast\" monsters from your Deck, except \"Gladiator Beast Secutor\".", "Goggle Golem": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf The original ATK of this card becomes 2100.", "Grave Ohja": "While there is a face-down Defense Position monster(s) on your side of the field, no player can select this card as an attack target. Each time a monster on your side of the field is Flip Summoned, inflict 300 damage to your opponent.", "Gravekeeper's Watcher": "During either player's turn, when your opponent activates a Spell/Trap Card or monster effect that could make them discard when it resolves: You can send this card from your hand to the Graveyard; negate the activation, and if you do, destroy it.", "Horus the Black Flame Dragon LV4": "Control of this face-up card cannot switch. During the End Phase, if this card destroyed a monster by battle this turn: You can send this face-up card to the Graveyard; Special Summon 1 \"Horus the Black Flame Dragon LV6\" from your hand or Deck.", "Infernal Dragon": "Once per turn, during the End Phase, if this card attacked this turn: Destroy this card. When this card on the field is destroyed and sent to the GY: You can Tribute 1 monster; Special Summon this card from the GY.", "Infinity Dark": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf When this card declares an attack, you can change the battle position of 1 face-up monster your opponent controls.", "King Tiger Wanghu": "When a monster(s) with 1400 or less ATK is Normal Summoned or Special Summoned: Destroy those monsters with 1400 or less ATK. This card must be face-up on the field to activate and to resolve this effect.", "Kiseitai": "When your opponent's monster attacks this card in face-down Defense Position, this card becomes an Equip Spell Card equipped to the attacking monster (No damage calculation is conducted). During each of your opponent's Standby Phases, increase your Life Points by half of the ATK of the monster equipped with this card.", "Lucky Pied Piper": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf When this card destroys an opponent's monster by battle and sends it to the Graveyard, draw 1 card.", "Magical Reflect Slime": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf Your opponent takes all Battle Damage that you would have taken from a battle involving this card.", "Metabo Globster": "When you Tribute this card for the Tribute Summon of a DARK monster, Special Summon 3 \"Metabo Tokens\" (Fiend-Type/DARK/Level 1/ATK 0/DEF 0) in Defense Position. These Tokens cannot be Tributed for a Tribute Summon.", "Mystic Swordsman LV2": "At the start of the Damage Step, if this card attacked a face-down Defense Position monster: Destroy that monster. During the End Phase, if this card destroyed a monster by battle this turn: You can send this face-up card to the Graveyard; Special Summon 1 \"Mystic Swordsman LV4\" from your hand or Deck.", "Phantom Beast Thunder-Pegasus": "When your opponent's monster declares an attack, you can remove from play this card from your Graveyard to make the Battle Damage taken by 1 \"Gazelle the King of Mythical Beasts\" or \"Phantom Beast\" monster 0. When this happens, that monster is not destroyed by battle.", "Phantom Dragonray Bronto": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf The original ATK of this card becomes 2300. If this card attacks, it is changed to Defense Position at the end of the Battle Phase. This card's battle position cannot be changed until the end of your next turn, except with a card effect.", "Razor Lizard": "While you control another Reptile-Type monster, if this card attacks a face-down Defense Position monster, destroy the monster immediately with this card's effect without flipping it face-up or applying damage calculation.", "Shadow Delver": "This card is treated as a Normal Monster while face-up on the field or in the Graveyard. While this card is face-up on the field, you can Normal Summon it to have it be treated as an Effect Monster with this effect: \u25cf Once per turn, you can select 1 face-up Level 4 or lower DARK monster you control. It can attack your opponent directly this turn.", "Silent Magician LV4": "Each time your opponent draws a card(s), place 1 Spell Counter on this card (max. 5). This card gains 500 ATK for each Spell Counter on it. During the Standby Phase of your next turn after the 5th Spell Counter is placed on this card: You can send this face-up card with 5 Spell Counters on it to the Graveyard; Special Summon 1 \"Silent Magician LV8\" from your hand or Deck.", "The Agent of Force - Mars": "This card is unaffected by any Spell Cards. While you control a face-up \"The Sanctuary in the Sky\" and your Life Points are higher than your opponent's, this card gains ATK and DEF by the difference between your and your opponent's Life Points.", "The Dark - Hex-Sealed Fusion": "You can substitute this card for any 1 Fusion Material Monster, but the other Fusion Material Monster(s) must be correct. You can Tribute Fusion Material Monsters on the field, including this face-up card; Special Summon 1 corresponding DARK Fusion Monster from your Extra Deck.", "The Immortal Bushi": "While this card is face-up on the field, it cannot be Tributed, except for the Tribute Summon of a Warrior-Type monster. During your Standby Phase, if this card is in your Graveyard and all the monsters in your Graveyard are Warrior-Type: You can Special Summon this card. You must also control no monsters to activate and to resolve this effect.", "The Light - Hex-Sealed Fusion": "You can substitute this card for any 1 Fusion Material Monster, but the other Fusion Material Monster(s) must be correct. You can Tribute Fusion Material Monsters on the field, including this face-up card; Special Summon 1 corresponding LIGHT Fusion Monster from your Extra Deck.", "The Six Samurai - Irou": "At the start of the Damage Step, if this card attacked a face-down Defense Position monster: Destroy that monster. You must control a face-up \"Six Samurai\" monster with a different name to activate and to resolve this effect. If this card would be destroyed, you can destroy another face-up \"Six Samurai\" monster you control instead.", "The Six Samurai - Nisashi": "While you control a face-up \"Six Samurai\" monster with a different name, this card can attack twice during each Battle Phase. If this card would be destroyed, you can destroy another face-up \"Six Samurai\" monster you control instead.", "The Unhappy Girl": "While this card is in face-up Attack Position on the field, this card is not destroyed as a result of battle. (Damage calculation is applied normally.) A monster that battled with this card cannot change its battle position, except with a card effect, or attack while this card is in face-up Attack Position on the field.", "Ultimate Insect LV1": "While this card is on the field, it is unaffected by the effects of Spell Cards. During your Standby Phase, by sending this face-up card to the Graveyard, Special Summon 1 \"Ultimate Insect LV3\" from your hand or Deck. (You cannot activate this effect the turn this card is Normal Summoned, Special Summoned, or flipped face-up.)"};CARDS.forEach(function(c){if(FT[c[0]])c[7]=FT[c[0]]})})();
+function hkSet(n,o){var k=lc(n);HK[k]=Object.assign(HK[k]||{},o)}
+function gemS(n,o){var e=o.ign2;delete o.ign2;o.gem=1;o.ign=function(p,k,c){if(c.gemi===0){c.gemi=1;L(c.name+' is Gemini Summoned');fxStat();return}if(e)e(p,k,c)};hkSet(n,o)}
+function base(n,i){return +cd(n)[i]||0}
+function isAtk17(q,z){return FIGHT17&&FIGHT17[0]==q&&FIGHT17[1]==z}
+gemS('Alien Hypno',{ign2:function(p,k,c){var t=H.opM(p,function(m){return up(m)&&m.actr})[0];if(t){var m=S[t[0]].z[t[1]];m.hyp=1;H.give(t[0],t[1]);L('Alien Hypno takes control of '+m.name)}},
+ end:function(q,z,c,x){if(x.p!=q)return;mons(q).forEach(function(k){var m=S[q].z[k];if(m&&m.hyp&&m.actr){m.actr--;if(!m.actr)H.kill([q,k])}})}});
+gemS('Ancient Gear Knight',{atk:function(q,z,c){S.agk={q:oth(q),t:S.turn};L('Ancient Gear Knight: opponent cannot activate Spells/Traps')}});
+var _ro17h=respOpts;respOpts=function(q){var r=_ro17h.apply(this,arguments);if(S.agk&&S.agk.q==q&&S.agk.t==S.turn&&S.phase==3&&r&&r.filter)r=r.filter(function(o){return o.m});return r};
+gemS('Aquarian Alessa',{kill:function(q,z,c,x){var o=oth(q);if(S[o].GY.lastIndexOf(x.n)>=0&&hand(o).length){var i=Math.floor(Math.random()*hand(o).length),n=hand(o).splice(i,1)[0];S[o].GY.push(n);S.reveal={q:o,n:n,t:S.turn};L('Aquarian Alessa: '+o+' discards '+n)}}});
+gemS('Blazewing Butterfly',{ign2:function(p,k,c){var g=S[p].GY.filter(function(n){return /Gemini/.test(cd(n)[1]||'')&&n!=c.name})[0];if(!g)return;toGY(p,k);S[p].GY.splice(S[p].GY.lastIndexOf(g),1);place(p,k,g,'ATK',String(base(g,2)),String(base(g,3)),true,'');if(S[p].z[k])S[p].z[k].gemi=1;L('Blazewing Butterfly revives '+g+' as an Effect Monster')}});
+gemS('Dawnbreak Gardna',{st:function(q,z,c){return [0,2300-base(c.name,3)]}});
+gemS('Goggle Golem',{st:function(q,z,c){return [2100-base(c.name,2),0]}});
+gemS('Elemental HERO Neos Alius',{st:function(q,z,c){c.alias='Elemental HERO Neos';return [0,0]}});
+gemS('Future Samurai',{ign2:function(p,k,c){if(c.fs==S.turn)return;var i=S[p].GY.findIndex(isMon),t=H.opM(p,up)[0];if(i<0||!t)return;c.fs=S.turn;S[p].BAN.push(S[p].GY.splice(i,1)[0]);H.kill(t)}});
+gemS('Gemini Lancer',{dmgstep:function(q,z,c,x){if(isAtk17(q,z)&&x.t&&x.t.pos!='ATK'&&+c.atk>+x.t.def)c.gl=+c.atk-(+x.t.def)},after:function(q,z,c){if(c.gl){S[oth(q)].LP=Math.max(0,S[oth(q)].LP-c.gl);L('Gemini Lancer pierces for '+c.gl);c.gl=0}}});
+gemS('Infinity Dark',{atk:function(q,z,c,x){var t=H.opM(q,function(m,k){return up(m)&&k!=x.tz})[0]||H.opM(q,up)[0];if(t){var m=S[t[0]].z[t[1]];m.pos=m.pos=='ATK'?'DEF':'ATK';L('Infinity Dark changes '+m.name+' to '+m.pos)}}});
+gemS('Lucky Pied Piper',{kill:function(q,z,c,x){if(S[oth(q)].GY.lastIndexOf(x.n)>=0)H.draw(q,1)}});
+gemS('Magical Reflect Slime',{slime:1});
+gemS('Phantom Dragonray Bronto',{st:function(q,z,c){return [2300-base(c.name,2),0]},atk:function(q,z,c){c.brt=S.turn},bpEnd:function(q,z,c){if(c.brt==S.turn){c.pos='DEF';c.lock=S.turn+2;L('Phantom Dragonray Bronto changes to Defense Position')}}});
+gemS('Shadow Delver',{ign2:function(p,k,c){if(c.sd==S.turn)return;var t=H.myM(p,function(m,z){return up(m)&&cd(m.name)[5]=='DARK'&&lvl(m.name)<=4&&z!=k})[0]||[p,k];c.sd=S.turn;S[t[0]].z[t[1]].dir=S.turn;L('Shadow Delver: '+S[t[0]].z[t[1]].name+' can attack directly')}});
+gemS('Dark Valkyria',{ign2:function(p,k,c){if(!c.dvc){c.dvc=1;c.ctr=(c.ctr||0)+1;c.atk=String(+c.atk+300);return}if(c.ctr){var t=H.opM(p)[0];if(t){c.ctr--;c.atk=String(+c.atk-300);H.kill(t)}}}});
+/* rewrites */
+hkSet('Kiseitai',{standby:null});
+hkSet('Element Doom',{st:null,dmgstep:function(q,z,c,x){if(isAtk17(q,z)||1){if(fieldAttr('EARTH')&&x.t&&/Effect|Flip/.test(cd(x.t.name)[1]||'')){x.t.negd=1;x.t.edn=1}}},kill:function(q,z,c,x){if(fieldAttr('WIND')&&c.ed2!=S.turn){c.ed2=S.turn;c.at=0}}});
+hkSet('Element Magician',{nocf:function(){return fieldAttr('WATER')},kill:function(q,z,c){if(fieldAttr('WIND')&&c.e2!=S.turn){c.e2=S.turn;c.at=0}},st:null});
+hkSet('Harpie Lady 2',{kill:null,dmgstep:function(q,z,c,x){if(x.t&&x.t.pos=='DOWN'&&isFlip(x.t.name)){x.t.negd=1;L('Harpie Lady 2 negates '+x.t.name)}}});
+hkSet('Big Shield Gardna',{after:function(q,z,c,x){if(x.def&&S[q].z[z]===c){c.pos='ATK';L('Big Shield Gardna changes to Attack Position')}}});
+hkSet('Gearfried the Iron Knight',{st:function(q,z,c){['ME','OPP'].forEach(function(p){STs(p).forEach(function(k){var s=S[p].z[k];if(s&&(s.eqto==z&&p==q||s.eq==q+':'+z)){L('Gearfried destroys '+s.name);fxGone(p,k,'')}})});return [0,0]},sum:null,a_eq:null});
+hkSet('Emissary of the Oasis',{dmg:null,natk:function(o,mz,m,tz,c){return mz==tz&&mons(o).some(function(k){var n=S[o].z[k];return up(n)&&/Normal/.test(cd(n.name)[1])&&lvl(n.name)<=3})}});
+hkSet('Gemini Summoner',{save:function(q,z,c,x){if(x&&x.bat&&c.gsv!=S.turn){c.gsv=S.turn;L('Gemini Summoner is not destroyed');return true}}});
+hkSet('The Agent of Force - Mars',{st:function(q,z,c){var d=S[q].LP-S[oth(q)].LP;return (d>0&&(S.field||'')=='The Sanctuary in the Sky')?[d,d]:[0,0]}});
+hkSet('Crystal Beast Amber Mammoth',{ign:null,mam:1});
+if(H.give){var _gv17h=H.give;H.give=function(q,z){var c=S[q]&&S[q].z[z],h=c&&up(c)&&hkf(c.name);if(h&&(h.nocontrol||h.nocf&&h.nocf())){L(c.name+': control cannot switch');return}return _gv17h.apply(this,arguments)}}
+/* fight wrapper: Amber Mammoth cover, Emissary/Reflect Slime damage */
+var _fi17h=fight;fight=function(p,az,tz){var o=oth(p),D=tz&&S[o].z[tz],A=S[p].z[az];if(CPUQ&&p=='OPP')return _fi17h.apply(this,arguments);
+ if(D&&up(D)&&/^Crystal Beast/.test(D.name)&&!(hk(D.name)||{}).mam){var mz=mons(o).filter(function(k){var c=S[o].z[k];return k!=tz&&up(c)&&!c.negd&&(hk(c.name)||{}).mam&&c.gemi!==0})[0];if(mz){L('Crystal Beast Amber Mammoth takes the attack instead of '+D.name);tz=mz;D=S[o].z[tz]}}
+ if(D&&D.pos=='DOWN'){D.wd=S.turn;var h=/^(Blast Sphere|Kiseitai)$/.test(D.name)&&hk(D.name);if(h&&h.atkd&&A){h.atkd(o,tz,D,{aq:p,az:az,a:A});if(S[o].z[tz]!==D){A.at=S.turn;return}}}
+ var sl=[A,D].filter(function(c){return c&&up(c)&&c.name=='Magical Reflect Slime'&&c.gemi!==0&&!c.negd})[0],slq=sl&&(sl===A?p:o);
+ var em=mons(o).concat([]).some(function(k){var c=S[o].z[k];return up(c)&&c.name=='Emissary of the Oasis'&&!c.negd})&&D&&/Normal Monster/.test(cd(D.name)[1]||'')&&lvl(D.name)<=3;
+ var lp={ME:S.ME.LP,OPP:S.OPP.LP};var r=_fi17h.call(this,p,az,tz);
+ if(sl){var lost=lp[slq]-S[slq].LP;if(lost>0){S[slq].LP=lp[slq];S[oth(slq)].LP=Math.max(0,S[oth(slq)].LP-lost);L('Magical Reflect Slime reflects '+lost+' damage')}}
+ if(em){var l2=lp[o]-S[o].LP;if(l2>0){S[o].LP=lp[o];L('Emissary of the Oasis: battle damage becomes 0')}}
+ var dl=D&&S[o].z[tz]!==D,al=A&&S[p].z[az]!==A;if(dl)EVA('a_bdie',{q:o,n:D.name,c:D});if(al)EVA('a_bdie',{q:p,n:A.name,c:A});return r};
+var _ph17h=fxPhase;fxPhase=function(w){var r=_ph17h.apply(this,arguments);if(w=='standby'){var t=(typeof TPX!='undefined'&&TPX)||tp();['ME','OPP'].forEach(function(q){mons(q).forEach(function(k){var c=S[q].z[k];if(!c)return;
+  if(c.kise&&c.kise==t){var g=Math.floor((+c.atk||0)/2);S[c.kise].LP+=g;L('Kiseitai: '+c.kise+' gains '+g+' LP')}
+  if(c.bomb&&c.bomb!=S.turn&&c.bombq&&t!=c.bombq){var a=+c.atk||0;L('Blast Sphere detonates '+c.name);delete c.bomb;H.kill([q,k]);S[q].LP=Math.max(0,S[q].LP-a);try{S[c.bombq].GY.push(c.bombn||'Blast Sphere')}catch(e){}}})})}return r};
+hkSet('Gyroid',{save:function(q,z,c){if(FIGHT17&&c.gy!=S.turn){c.gy=S.turn;L('Gyroid is not destroyed by battle');return true}}});
+hkSet('King Tiger Wanghu',{a_sum:function(q,z,c,x){var m=x&&S[x.q]&&S[x.q].z[x.z];if(m&&m!==c&&up(m)&&+m.atk<=1400){L('King Tiger Wanghu destroys '+m.name);H.kill([x.q,x.z])}}});
+hkSet('Grave Protector',{a_bdie:function(q,z,c,x){if(!x||x.c===c)return;var p=x.c&&x.c.own||x.q,i=S[p].GY.lastIndexOf(x.n);if(i>=0){S[p].pile.push(S[p].GY.splice(i,1)[0]);L('Grave Protector returns '+x.n+' to the Deck')}}});
+hkSet('Witch Doctor of Sparta',{a_ss:null,a_sum:function(q,z,c,x){if(x&&x.ss&&!(x.q==q&&x.z==z))H.dmg(oth(q),500)}});
+var _dr17h=H.draw;H.draw=function(q,n){var a=hand(q).length,r=_dr17h.apply(this,arguments);if(hand(q).length>a)EVA('a_draw',{q:q,n:hand(q).length-a});return r};
+var _kl17h=H.kill;H.kill=function(t){var s=FXSRC||EVCUR,c=t&&S[t[0]]&&S[t[0]].z[t[1]],h=c&&up(c)&&!c.negd&&hk(c.name);if(s&&h&&h.unaff){var src=s[1]&&/^S\d/.test(s[1])?S[s[0]].z[s[1]]:null,nm=src?src.name:s[1],k=/Trap/.test(cd(nm)[1]||'')?'Trap':/Spell/.test(cd(nm)[1]||'')?'Spell':'Monster';if(h.unaff(k)){L(c.name+' is unaffected by '+nm);return}}return _kl17h.apply(this,arguments)};
+function banOn(){return ['ME','OPP'].some(function(p){return mons(p).some(function(z){var c=S[p].z[z];return up(c)&&!c.negd&&hk(c.name)&&hk(c.name).banisher})})}
+var _gy17h=toGY;toGY=function(p,z){var c=S[p].z[z],b=c&&banOn()&&!(hk(c.name)||{}).banisher;var g=c&&(c.own||p);var n0=g&&S[g].GY.length;_gy17h.apply(this,arguments);if(b&&!S[p].z[z]&&S[g].GY.length>n0){var i=S[g].GY.lastIndexOf(c.name);if(i>=0){S[g].GY.splice(i,1);(S[g].BAN=S[g].BAN||[]).push(c.name);L(c.name+' is banished instead (Banisher)')}}};
+var _lo17h=legalOpts;legalOpts=function(p,n){var c=cd(n);if(/Ritual/.test(c[1]||'')&&/Monster/.test(c[1]||'')&&c[5]=='DARK'){RAVEN=1;try{return _lo17h.apply(this,arguments)}finally{RAVEN=0}}return _lo17h.apply(this,arguments)};
+var _tp17h=tribPick;tribPick=function(need,cb,minLv,ex){if(minLv&&ex&&/Ritual/.test(cd(ex)[1]||'')&&cd(ex)[5]=='DARK'){RAVEN=1;var c0=cb;cb=function(t){RAVEN=0;c0(t)}}return _tp17h.call(this,need,cb,minLv,ex)};
+function wdjat(q){var o=oth(q),k=STs(o).filter(function(z){var s=S[o].z[z];return s&&(s.pos=='SET'||s.pos=='DOWN')})[0]||mons(o).filter(function(z){return S[o].z[z].pos=='DOWN'})[0];if(!k)return;var s=S[o].z[k];s.seen=q;S.reveal={q:o,z:k,n:s.name,t:S.turn,by:q};L('A Man with Wdjat looks at '+o+' '+k+': '+s.name);try{if(q=='ME'&&typeof toast=='function')toast('Wdjat reveals: '+s.name)}catch(e){}}
+hkSet('A Man with Wdjat',{sum:function(q,z,c,x){if(x.ns)wdjat(q)},standby:function(q,z,c,x){if(x.p==q)wdjat(q)}});
+/*@@end v17h.js*/
+/*@@v17z.js*/K({'Alien Psychic':{alienpsy:1},'Darklord Nurse Reficule':{revGain:1}});
+Object.keys(HK).forEach(function(n){var h=HK[n];if(h.union&&!h.ign)h.ign=function(p,k){k[0]=='M'?unionEq(p,k):unionOff(p,k)};
+ if(h.gem){var g2=h.ign;h.ign=function(p,k,c){if(c.gemi===0){c.gemi=1;L(c.name+' is Gemini Summoned')}else if(g2)g2(p,k,c)}}});
+hkInstall();
+/*@@end v17z.js*/
 </script></body></html>
