@@ -174,8 +174,28 @@ body{padding-top:34px}
 .rb{font-style:normal;font-size:10px;padding:1px 4px;border-radius:4px;margin-left:2px;color:#111;background:#ccd}.rb2{background:#8fe0ff}.rb3{background:#ffd84a}.rb4{background:linear-gradient(90deg,#f8a,#fd6,#8f8,#8cf,#c8f)}.rb5{background:#c8a046;color:#fff}
 #nphb{background:linear-gradient(#2a7bd8,#1652a0);color:#fff;font-weight:700;border:1px solid #8fd0ff;border-radius:8px;padding:6px 12px;box-shadow:0 0 8px #3af8}#nphb:disabled{background:#2a3242;color:#8a96aa;border-color:#445;box-shadow:none}
 #ph span.phx{opacity:.35;pointer-events:none}
+.pzok{box-shadow:0 0 0 2px #5ff,0 0 14px #2df!important;animation:pzg 1s infinite alternate}
+.pzno{opacity:.35;filter:grayscale(1)}
+@keyframes pzg{to{box-shadow:0 0 0 2px #aff,0 0 22px #5ff}}
+#pzbar{position:fixed;left:8px;right:8px;bottom:8px;z-index:60;background:#0c2440ee;border:1px solid #4cf;border-radius:10px;padding:10px;color:#dff;font:14px sans-serif;display:flex;justify-content:space-between;align-items:center}
+#pzbar button{background:#334;color:#fff;border:1px solid #889;border-radius:8px;padding:6px 10px}
+.zf{font-size:0!important;padding:0!important}
+.zf>.lb,.zf>.fb,.zf>.vw,.zf>.zst{font-size:9px;z-index:3}
+.zc{position:absolute;left:50%;top:50%;width:100px;transform:translate(-50%,-50%) scale(var(--s,.4));pointer-events:none}
+.zc .rc{width:100px}
+.cback{width:100px;height:146px;border-radius:5px;box-sizing:border-box;border:4px solid #4a250b;background:radial-gradient(ellipse 34% 26% at 50% 50%,#111 55%,#c2741f 58%,#6b3410 62%,transparent 64%),repeating-radial-gradient(circle at 50% 50%,#6a3510 0 6px,#53280a 6px 12px);box-shadow:inset 0 0 0 3px #b8762f}
+.zst{position:absolute;bottom:1px;left:1px;right:1px;background:#000c;color:#fff;border-radius:3px;font-weight:bold;text-align:center;line-height:1.3}
+.canatk{box-shadow:0 0 0 2px #ffd23f,0 0 14px #ff9f1a!important;animation:cag .9s infinite alternate}
+.canatk::after{content:'⚔';position:absolute;top:-2px;right:1px;font-size:14px;z-index:4;text-shadow:0 0 4px #000}
+@keyframes cag{to{box-shadow:0 0 0 2px #fff27a,0 0 22px #ffb000}}
+.atkfx{animation:atkj .5s}
+@keyframes atkj{40%{transform:translateY(-40px) scale(1.15)}}
+.flyc{position:fixed;width:40px;height:58px;border-radius:4px;z-index:80;background:repeating-radial-gradient(circle,#6a3510 0 4px,#53280a 4px 8px);border:2px solid #b8762f;transition:transform .8s ease-out,opacity .8s ease-in;pointer-events:none}
+.lpup{animation:lpU .8s}.lpdn{animation:lpD .8s}
+@keyframes lpU{0%,100%{color:inherit}30%{color:#4f8;text-shadow:0 0 12px #4f8;transform:scale(1.4)}}
+@keyframes lpD{0%,100%{color:inherit}30%{color:#f44;text-shadow:0 0 12px #f44;transform:scale(1.4)}}
 </style></head><body><div class="wrap">
-<div class="ctl"><button id="spk" onclick="AU.toggle()">&#128264;</button> <input id="vol" type="range" min="0" max="100" style="width:90px;vertical-align:middle" oninput="AU.vol(this.value)"> Turn <b id="turn">1</b> <button onclick="nextTurn()">Next turn</button> <button onclick="cpuTurn()">CPU turn</button>
+<div class="ctl"><button id="spk" onclick="AU.toggle()">&#128264;</button> <input id="vol" type="range" min="0" max="100" style="width:90px;vertical-align:middle" oninput="AU.vol(this.value)"> Turn <b id="turn">1</b>  
 <span class="ph" id="ph"></span></div>
 <div id="OPP"></div><div id="ME"></div>
 <div class="ctl"><b>Your hand</b> <button onclick="shuf();toast('Deck shuffled',1)">Shuffle</button> <button onclick="var b=document.getElementById('db');b.style.display=b.style.display=='none'?'block':'none';dbR()" id="dbbtn">Deck Builder</button><button id="nphb" onclick="nextPhase()" style="display:none">Next Phase</button>
@@ -184,9 +204,9 @@ body{padding-top:34px}
 <div style="position:relative"><input id="dbq" placeholder="Search card to add..." style="width:100%" autocomplete="off"><div id="dbac" style="background:#06122a;border:1px solid #29d8ff;max-height:240px;overflow:auto"></div></div>
 <div id="dbl" style="font-size:13px;margin-top:6px"></div>
 <button onclick="showMode()">Change mode</button> <button onclick="startDuel()">Start duel (shuffle + draw 5)</button> <button onclick="if(confirm('Clear deck list?')){S.ME.list=[];S.ME.fus=[];save();dbR()}">Clear list</button></div></div>
-<div class="ctl">Paste board state:<br><textarea id="ta" rows="3" style="width:98%"></textarea><br>
+<div class="ctl" id="dbgctl" style="display:none">Paste board state:<br><textarea id="ta" rows="3" style="width:98%"></textarea><br>
 <button onclick="applyTxt(ta.value)">Apply</button> <button onclick="ta.value=exportTxt()">Export state</button>
-<button onclick="battle()">Battle helper</button> First player <select id="fpl" onchange="S.first=this.value;save()"><option value="ME">Mike</option><option value="OPP">Volt Kaiser</option></select> <button onclick="if(confirm('Reset board?')){S=fresh();save()}">Reset</button></div>
+ First player <select id="fpl" onchange="S.first=this.value;save()"><option value="ME">Mike</option><option value="OPP">Volt Kaiser</option></select> <button onclick="if(confirm('Reset board?')){S=fresh();save()}">Reset</button></div>
 </div>
 <div class="ctl" style="max-width:1000px;margin:6px auto">Rules log<div id="log" style="height:110px;overflow:auto;font-size:11px;font-family:monospace"></div></div><div id="ban"></div><div id="mode"></div><div id="pack"></div><div id="toast"></div><div id="dlg"><div class="b"><div id="dt" style="font-weight:bold;font-size:16px"></div><div id="det"></div>
 <label style="position:relative">Card name <input id="fn" autocomplete="off" style="width:95%"><div id="ac" style="position:absolute;left:0;right:0;top:100%;background:#06122a;border:1px solid #29d8ff;max-height:260px;overflow:auto;display:none;z-index:20"></div></label>
@@ -216,7 +236,7 @@ function render(){document.getElementById('turn').textContent=S.turn;var fe=docu
   var gy='<div class="z" onclick="showGY(\''+p+'\')"><span class="lb">GY</span>Graveyard<br>('+f.GY.length+')'+(f.GY.length?'<br><i>'+esc(f.GY[f.GY.length-1])+'</i>':'')+'</div>';
   var dk='<div class="z down" onclick="var n=prompt(\'Deck count\','+f.deck+');if(n!==null){S.'+p+'.deck=+n||0;save()}"><span class="lb">DECK</span>Deck<br>'+f.deck+'</div>';
   var pct=Math.min(100,f.LP/80);
-  var hdr='<div class="hdr">'+(p=='OPP'?'<img class="por" src="'+PORT[NAMES.OPP]+'" onerror="this.onerror=null;this.src=SIL">':'')+'<span class="plate">'+(p=='OPP'?NAMES.OPP:'Mike')+'</span><div class="gauge"><i style="width:'+(LPS[p]||pct)+'%" id="g'+p+'"></i></div><span class="lp" id="n'+p+'">'+(SHOWN[p]==null?f.LP:SHOWN[p])+'</span> <input id="lp'+p+'" size="5" placeholder="amt"> <button onclick="lp(\''+p+'\',-1)">-</button><button onclick="lp(\''+p+'\',1)">+</button></div>';
+  var hdr='<div class="hdr">'+(p=='OPP'?'<img class="por" src="'+PORT[NAMES.OPP]+'" onerror="this.onerror=null;this.src=SIL">':'')+'<span class="plate">'+(p=='OPP'?NAMES.OPP:'Mike')+'</span><div class="gauge"><i style="width:'+(LPS[p]||pct)+'%" id="g'+p+'"></i></div><span class="lp" id="n'+p+'">'+(SHOWN[p]==null?f.LP:SHOWN[p])+'</span></div>';
   var r1='<div class="row">'+side+m+gy+'</div>',r2='<div class="row"><div style="width:110px"></div>'+s+dk+'</div>';
   document.getElementById(p).innerHTML='<div class="field">'+(p=='OPP'?hdr+r2+r1:r1+r2+hdr)+'</div>';
   requestAnimationFrame(function(){document.getElementById('g'+p).style.width=pct+'%'});LPS[p]=pct;countLP(p,f.LP)});fx()}
@@ -232,7 +252,7 @@ function lp(p,sg){var v=+document.getElementById('lp'+p).value||0;S[p].LP=Math.m
 function openD(p,k){cur=[p,k];var c=S[p].z[k]||{},m=k[0]=='M';
  dt.textContent=NAMES[p]+' '+k;fn.value=c.name||'';fa.value=c.atk||'';fd.value=c.def||'';fg.checked=true;
  fp.innerHTML=(m?[['ATK','Face-up ATK'],['DEF','Face-up DEF'],['DOWN','Face-down DEF']]:[['UP','Face-up'],['SET','Face-down Set']]).map(function(o){return'<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
- if(c.pos)fp.value=c.pos;dlg.style.display='flex';document.getElementById('ac').style.display='none';fn.focus()}
+ if(c.name&&vwOK(p,c))VZ(p,k);else if(!c.name)toast('Empty zone');else toast('Face-down card')}
 function okD(){var p=cur[0],k=cur[1];if(!fn.value.trim()&&fp.value!='SET'&&fp.value!='DOWN'){clrD();return}
  var r=place(p,k,fn.value.trim()||'Set card',fp.value,fa.value.trim(),fd.value.trim(),false,'');if(r){alert(r);return}dlg.style.display='none';save()}
 function clrD(){var p=cur[0],k=cur[1],c=S[p].z[k];if(c&&fg.checked)S[p].GY.push(c.name);delete S[p].z[k];dlg.style.display='none';save()}
@@ -766,7 +786,7 @@ var _st6=startDuel;startDuel=function(){repairDeck();return _st6()};
 var _sd6=_sd2;_sd2=function(){repairDeck();_sd6();syncM();if(M.pile.length+M.hand.length<40){M.pile=M.list.slice();M.hand=[];shuf();drawC(5)}};
 var _dc6=drawC;drawC=function(n){syncM();if(!M.pile.length&&!duelLive()&&M.list.length>=40){toast('Starting a new duel - shuffling your deck',1);return startDuel()}return _dc6(n)};
 var _rn6=render;render=function(){syncM();_rn6();try{var o=document.getElementById('OPP'),hd=o&&o.querySelector('.hdr');if(hd){var n=S.OPP.hand.length,b=document.createElement('div');b.className='ohand';b.innerHTML=Array(n+1).join('<i></i>')+'<span>Hand: '+n+'</span>';hd.parentNode.insertBefore(b,hd.nextSibling)}}catch(e){}};
-var _od6=openD;openD=function(p,k){var c=S[p].z[k];if(c&&vwOK(p,c)&&!openD._go){return ov('<h2 style="margin:4px">'+esc(c.name)+'</h2><button class="big" onclick="ovClose();VZ(\''+p+'\',\''+k+'\')">&#128269; View card</button><br><br><button class="big" onclick="ovClose();openD._go=1;openD(\''+p+'\',\''+k+'\');openD._go=0">&#9881; Actions / edit</button><br><br><button onclick="ovClose()">Cancel</button>')}return _od6(p,k)};
+var _od6=openD;openD=function(p,k){var c=S[p].z[k];if(c&&vwOK(p,c)&&!openD._go){return ov('<h2 style="margin:4px">'+esc(c.name)+'</h2><button class="big" onclick="ovClose();VZ(\''+p+'\',\''+k+'\')">&#128269; View card</button><br><br><button class="big" onclick="ovClose();openD._go=1;openD(\''+p+'\',\''+k+'\');openD._go=0">&#9881; Actions</button><br><br><button onclick="ovClose()">Cancel</button>')}return _od6(p,k)};
 try{repairDeck();save()}catch(e){}
 
 var _rs7=realStart;realStart=function(){_rs7();try{AU.theme(PRO.mode=='classic'&&PRO.tour?(PRO.tour.round>=2||S.opp=='Volt Kaiser'?'boss':'tour'):'rot')}catch(e){}};
@@ -1171,4 +1191,242 @@ function phGuard(){if(S.pt!==S.turn){S.pt=S.turn;S.pm=S.phase;return}if(S.phase<
 var _sv14f=save;save=function(){try{phGuard()}catch(e){}return _sv14f.apply(this,arguments)};
 var _re14f=render;render=function(){try{phGuard()}catch(e){}var r=_re14f.apply(this,arguments);try{[].forEach.call(document.querySelectorAll('#ph span'),function(sp,i){sp.className=(i==S.phase?'on':'')+(i<S.phase||tp()!='ME'||(S.turn==1&&i==3)?' phx':'')})}catch(e){}return r};
 var _pg14f=phGo;phGo=function(i){if(S.turn==1&&i==3)return toast('No Battle Phase on the first turn');return _pg14f(i)};
+/* ===== v14g: pick a field zone first, then placement options for that zone ===== */
+var PZONE=null,PICK=null;
+var _free14g=free;free=function(p,t){
+ if(p=='ME'&&PZONE&&PZONE.indexOf(t)==0&&PZONE.length==t.length+1&&!S.ME.z[PZONE])return PZONE;
+ if(p=='OPP'){var o=[3,2,4,1,5];for(var j=0;j<5;j++)if(!S.OPP.z[t+o[j]])return t+o[j];return null}
+ return _free14g(p,t)};
+function zKind(z){return z=='FIELD'?'F':z[0]}
+function optKind(o,n){var ty=cd(n)[1]||'';if(/^(NA|NS|TA|TS|RI)$/.test(o.k))return'M';if(/^(FA|FS)$/.test(o.k))return'F';
+ if(/^(SA|SS|EQ|FU|MR)$/.test(o.k))return'S';if(o.k=='RX')return /Monster/.test(ty)?'M':'S';return /Monster/.test(ty)?'M':/^Field/.test(ty)?'F':'S'}
+function cardKind(n){var ty=cd(n)[1]||'';return /Monster/.test(ty)?'M':/Spell/.test(ty)&&/^Field/.test(ty)?'F':'S'}
+function zoneOpts(n,z){var O=legalOpts('ME',n),zk=zKind(z),occ=S.ME.z[z];
+ O.forEach(function(o){if(o.dis)return;var k=optKind(o,n);
+  if(k!=zk){o.dis=k=='M'?'Monsters go in a Monster Zone (M1–M5)':k=='F'?'Field Spells go in the Field Zone':(/Trap/.test(cd(n)[1])?'Traps':'Spells')+' go in a Spell & Trap Zone (S1–S5)';return}
+  if(occ){if((o.k=='TA'||o.k=='TS')&&zk=='M'){o.s=(o.s||'')+' • '+z+' is freed only if you tribute it';return}
+   if(o.k=='FA'&&zk=='F')return;o.dis=z+' is occupied by '+(occ.pos=='DOWN'||occ.pos=='SET'?'a Set card':occ.name)}});return O}
+function zoneOK(n,z){return zoneOpts(n,z).some(function(o){return!o.dis})}
+placeMenu=function(i){PICK={i:i,n:M.hand[i]};pmClose();toast('Tap a zone to place '+PICK.n,0);pzHi()};
+function pzEls(){return[].slice.call(document.querySelectorAll('[onclick*="openD(\'ME\'"]')).map(function(e){var m=(e.getAttribute('onclick')||'').match(/openD\('ME',\s*'(\w+)'\)/);return m&&/^(M[1-5]|S[1-5]|FIELD)$/.test(m[1])?[e,m[1]]:null}).filter(Boolean)}
+function pzHi(){var b=document.getElementById('pzbar');pzEls().forEach(function(x){x[0].classList.remove('pzok','pzno');if(PICK)x[0].classList.add(zoneOK(PICK.n,x[1])?'pzok':'pzno')});
+ if(PICK){if(!b){b=document.createElement('div');b.id='pzbar';document.body.appendChild(b)}b.innerHTML='<span>Choose a zone for <b>'+esc(PICK.n)+'</b></span> <button onclick="pzCancel()">Cancel</button>'}else if(b)b.remove()}
+function pzCancel(){PICK=null;PZONE=null;pzHi()}
+var _oD14g=openD;openD=function(p,k){if(PICK&&p=='ME'&&/^(M[1-5]|S[1-5]|FIELD)$/.test(k)){var i=PICK.i,n=PICK.n;if(M.hand[i]!=n){pzCancel();return}
+ var O=zoneOpts(n,k);O.forEach(function(o){o.f=function(){PZONE=k;PICK=null;pzHi();doPlace(i,o)}});
+ O.push({t:'Choose another zone',cx:1,f:function(){pmClose();pzHi()}});O.push({t:'Cancel',cx:1,f:function(){pmClose();pzCancel()}});pmShow(i,'Place '+n+' in '+k,O);return}
+ return _oD14g.apply(this,arguments)};
+var _re14g=render;render=function(){var r=_re14g.apply(this,arguments);try{if(PICK&&!duelLive())pzCancel();pzHi()}catch(e){}return r};
+var _pc14g=pmClose;pmClose=function(){PZONE=null;return _pc14g.apply(this,arguments)};
+/* ===== v14h: entering End passes the turn automatically ===== */
+var ENDT=0;
+function autoEnd(){if(tp()=='ME'&&S.phase==5&&S.ME.LP>0&&S.OPP.LP>0&&duelLive()&&ENDT!=S.turn){ENDT=S.turn;var t=S.turn;toast('End Phase',0);
+ setTimeout(function(){if(S.turn==t&&tp()=='ME'&&S.phase==5){try{if(window.handLimit&&handLimit('ME',function(){nextTurn()}))return}catch(e){}nextTurn()}},600)}}
+var _re14h=render;render=function(){var r=_re14h.apply(this,arguments);try{autoEnd()}catch(e){}return r};
+/* ===== v15a: real field cards, CPU visible draw, Attack command, chains & responses ===== */
+var SET15=(function(){try{return JSON.parse(localStorage.getItem('ygoSet15'))||{}}catch(e){return{}}})();
+SET15=Object.assign({mus:60,sfx:80,spd:1,diff:'Normal'},SET15);
+function spd(ms){return Math.round(ms/(+SET15.spd||1))}
+// ---- field cards with the real renderer
+var _zh15=zoneHTML;zoneHTML=function(p,k){var r=_zh15(p,k),c=S[p].z[k];if(!c)return r;var x=nix(c.name),dn=c.pos=='SET'||c.pos=='DOWN',inner;
+ if(dn)inner='<div class="zc"><div class="cback"><i></i></div></div>';else if(x!=null)inner='<div class="zc">'+rcard(x,p=='ME'?(hrar(c.name)||0):0)+'</div>';else return r;
+ var st=k[0]=='M'&&!dn&&(c.atk||c.def)?'<span class="zst">'+(c.atk||'?')+'/'+(c.def||'?')+'</span>':'';
+ var i=r.indexOf('>');return r.slice(0,i).replace('class="','class="zf ')+'>'+inner+st+r.slice(i+1)};
+function zfit(){[].forEach.call(document.querySelectorAll('.zf'),function(e){var w=e.clientWidth,h=e.clientHeight;if(w)e.style.setProperty('--s',(Math.min(w/100,h/146)*.97).toFixed(3))})}
+// ---- CPU turn: visible draw, then queued summons/attacks with response windows
+var CPUQ=null,SKIPDRAW=0,CPUBUSY=0,NOTRAP=0,BPEND=0,CHAIN=null;
+var _drawP15=drawP;drawP=function(p,n){if(SKIPDRAW&&p=='OPP'&&n==1){SKIPDRAW=0;return}return _drawP15(p,n)};
+function oppDrawFx(){try{AU._ok=1;AU.sfx('draw')}catch(e){}try{var d=document.querySelector('[onclick*="openD(\'OPP\'"]')||document.body,b=d.getBoundingClientRect(),f=document.createElement('div');f.className='flyc';f.style.left=(innerWidth-70)+'px';f.style.top=(b.top-10)+'px';document.body.appendChild(f);requestAnimationFrame(function(){f.style.transform='translate(-'+(innerWidth/2-60)+'px,-60px) rotate(-12deg)';f.style.opacity='0'});setTimeout(function(){f.remove()},900)}catch(e){}}
+var _fight15=fight;fight=function(p,az,tz){if(CPUQ&&p=='OPP'){var A=S.OPP.z[az];if(A)A.at=S.turn;CPUQ.push({t:'atk',az:az,tz:tz});return}return _fight15(p,az,tz)};
+var _toa15=trapOnAttack;trapOnAttack=function(d,a,az){if(NOTRAP)return false;return _toa15(d,a,az)};
+var _tos15=trapOnSummon;trapOnSummon=function(d,a,z){if(CPUQ&&a=='OPP'){CPUQ.push({t:'sum',z:z,n:S.OPP.z[z]&&S.OPP.z[z].name});return}
+ if(a=='ME'&&!CHAIN&&S[a].z[z])return chainStart({type:'summon',p:'ME',z:z,name:S.ME.z[z].name},function(){save()});return _tos15(d,a,z)};
+cpuTurn=function(){if(typeof QUITT!='undefined'&&Date.now()-QUITT<4000||!duelLive())return;if(tp()!='OPP')return;if(S.ME.LP<=0||S.OPP.LP<=0)return;if(CPUBUSY==S.turn)return;CPUBUSY=S.turn;var T=S.turn;
+ if(!S.OPP.hand)setupSide('OPP',AIDECK);S.phase=0;_drawP15('OPP',1);if(S.OPP.out){L('OPP cannot draw - deck out!');S.OPP.LP=0;save();return}
+ L('OPP draws 1 card');oppDrawFx();save();toast(NAMES.OPP+' draws',0);
+ setTimeout(function(){if(S.turn!=T)return;S.phase=1;try{ssStandby()}catch(e){}save();setTimeout(function(){if(S.turn!=T)return;
+  SKIPDRAW=1;CPUQ=[];var Q;try{aiTurn('OPP')}finally{SKIPDRAW=0;Q=CPUQ;CPUQ=null}S.OPP.deck=S.OPP.pile.length;S.phase=Q.some(function(e){return e.t=='atk'})?3:2;save();
+  runQ(Q,function(){BPEND=0;if(S.ME.LP<=0||S.OPP.LP<=0){save();toast(S.ME.LP<=0?NAMES.OPP+' wins!':'You win!',1);return}
+   S.phase=5;save();setTimeout(function(){if(S.turn!=T)return;S.turn++;S.phase=0;save();toast('Your turn',1)},spd(800))})},spd(500))},spd(800))};
+function runQ(Q,done){var e=Q.shift();if(!e)return done();var nx=function(){save();setTimeout(function(){runQ(Q,done)},spd(450))};
+ if(S.ME.LP<=0||S.OPP.LP<=0)return done();
+ if(e.t=='sum'){if(!S.OPP.z[e.z]||S.OPP.z[e.z].name!=e.n)return nx();return chainStart({type:'summon',p:'OPP',z:e.z,name:e.n},nx)}
+ if(e.t=='atk'){if(BPEND)return nx();var A=S.OPP.z[e.az];if(!A||A.pos!='ATK')return nx();var tz=e.tz,om=mons('ME');
+  if(tz&&!S.ME.z[tz])tz=null;if(!tz&&om.length){var tg=om.filter(function(z){return +A.atk>seenDef('ME',S.ME.z[z])})[0];if(!tg)return nx();tz=tg}
+  S.phase=3;try{AU.sfx('attack')}catch(x){}L('OPP '+A.name+' attacks '+(tz?S.ME.z[tz].pos=='DOWN'?'a set monster':S.ME.z[tz].name:'directly'));
+  return chainStart({type:'attack',p:'OPP',az:e.az,tz:tz,name:A.name},nx)}nx()}
+// ---- chain engine
+var RESP={
+ 'mirror force':{w:function(t){return t.type=='attack'},r:function(q,l0){mons(l0.p).filter(function(z){return S[l0.p].z[z].pos=='ATK'}).forEach(function(z){kill(l0.p,z)});l0.stop=1},
+  ai:function(t){return mons(t.p).filter(function(z){return S[t.p].z[z].pos=='ATK'}).length>=2||atkOf(t)>=1900||lethal(t)}},
+ 'sakuretsu armor':{w:function(t){return t.type=='attack'},r:function(q,l0){if(S[l0.p].z[l0.az])kill(l0.p,l0.az);l0.stop=1},ai:function(t){return atkOf(t)>=1400||lethal(t)}},
+ 'negate attack':{w:function(t){return t.type=='attack'},r:function(q,l0){l0.stop=1;BPEND=1;if(l0.p=='ME')S.phase=4},ai:function(t){return lethal(t)||atkOf(t)>=2400}},
+ 'magic cylinder':{w:function(t){return t.type=='attack'},r:function(q,l0){var a=atkOf(l0);l0.stop=1;dmg(l0.p,a);L((q)+' Magic Cylinder deals '+a)},ai:function(t){return atkOf(t)>=1500}},
+ 'waboku':{w:function(t){return t.type=='attack'},r:function(q,l0){l0.stop=1},ai:function(t){return lethal(t)}},
+ 'book of moon':{w:function(t){return t.type=='attack'},qp:1,r:function(q,l0){var A=S[l0.p].z[l0.az];if(A){A.pos='DOWN'}l0.stop=1},ai:function(t){return atkOf(t)>=1800}},
+ 'trap hole':{w:function(t){var c=S[t.p].z[t.z];return t.type=='summon'&&c&&+c.atk>=1000},r:function(q,l0){if(S[l0.p].z[l0.z])kill(l0.p,l0.z)},ai:function(t){return +S[t.p].z[t.z].atk>=1300}},
+ 'bottomless trap hole':{w:function(t){var c=S[t.p].z[t.z];return t.type=='summon'&&c&&+c.atk>=1500},r:function(q,l0){var c=S[l0.p].z[l0.z];if(c){kill(l0.p,l0.z);var g=S[l0.p].GY,i=g.lastIndexOf(c.name);if(i>=0){g.splice(i,1);(S[l0.p].BAN=S[l0.p].BAN||[]).push(c.name)}}},ai:function(t){return true}},
+ 'torrential tribute':{w:function(t){return t.type=='summon'},r:function(){['ME','OPP'].forEach(function(s){mons(s).forEach(function(z){kill(s,z)})})},ai:function(t){return mons(t.p).length>mons(oth(t.p)).length+1}},
+ 'seven tools of the bandit':{w:function(t){return t.type=='trap'},cost:function(q){if(S[q].LP<=1000)return 0;dmg(q,1000);return 1},r:negTop,ai:function(){return true}},
+ 'trap jammer':{w:function(t){return t.type=='trap'&&S.phase==3},r:negTop,ai:function(){return true}},
+ 'magic jammer':{w:function(t){return t.type=='spell'},cost:function(q){var h=hand(q);if(h.length<2&&q=='OPP'||!h.length)return 0;var d=h.slice().sort(function(a,b){return cScore0(a)-cScore0(b)})[0];useH(q,d);S[q].GY.push(d);return 1},r:negTop,ai:function(t){return cScore0(t.name)>=2000}},
+ 'solemn judgment':{w:function(t){return /summon|spell|trap/.test(t.type)},cost:function(q){S[q].LP=Math.ceil(S[q].LP/2);return 1},r:negTop,ai:function(t){return t.type=='summon'?+((S[t.p].z[t.z]||{}).atk||0)>=2400:cScore0(t.name)>=2400}}};
+function cScore0(n){try{return isMon(n)?cAtk(n):stScore(n)}catch(e){return 1000}}
+function atkOf(l){var A=S[l.p].z[l.az];return A?+A.atk||0:0}
+function lethal(l){return !l.tz&&atkOf(l)>=S[oth(l.p)].LP}
+function negTop(q,l,idx){var b=CHAIN.l[idx-1];if(!b)return;b.neg=1;if(b.type=='summon'&&S[b.p].z[b.z])kill(b.p,b.z)}
+function respOpts(q){if(!CHAIN)return[];var top=CHAIN.l[CHAIN.l.length-1],T=S.turn,O=[];if(top.p==q)return O;
+ STs(q).forEach(function(z){var c=S[q].z[z],R=RESP[lc(c.name)];if(!R||c.pos!='SET'||c.set==T||(c.st==T&&!R.qp))return;if(c.st==T&&R.qp&&!/Trap/.test(cd(c.name)[1]))return;try{if(R.w(top))O.push({z:z,n:c.name,R:R})}catch(e){}});
+ if(q==tp())hand(q).forEach(function(n,i){var R=RESP[lc(n)];if(R&&R.qp&&/Quick/.test(cd(n)[1]||'')&&free(q,'S')){try{if(R.w(top)&&!O.some(function(o){return o.h&&o.n==n}))O.push({h:1,n:n,R:R})}catch(e){}}});return O}
+function chainStart(l0,done){if(CHAIN){done&&done();return}CHAIN={l:[l0],done:done};respond(oth(l0.p))}
+function respond(q){var O=respOpts(q),top=CHAIN.l[CHAIN.l.length-1];
+ if(q=='OPP'){var D=SET15.diff,pick=O.filter(function(o){try{return D=='Hard'?true:o.R.ai(top)}catch(e){return false}})[0];if(pick&&D=='Easy'&&Math.random()<.5)pick=null;
+  if(pick&&activate(q,pick))return respond('ME');return resolveChain()}
+ if(!O.length)return resolveChain();
+ var what=top.type=='attack'?(top.p=='OPP'?NAMES.OPP+'\'s '+top.name+' attacks'+(top.tz?'':' directly'):'Your '+top.name+' attacks'):top.type=='summon'?(top.p=='ME'?'You':NAMES.OPP)+' summoned '+top.name:(top.p=='ME'?'You':NAMES.OPP)+' activated '+top.name;
+ try{AU.sfx('trap')}catch(e){}
+ pmList('Respond? — '+what+(CHAIN.l.length>1?' (chain link '+(CHAIN.l.length+1)+')':''),O.map(function(o){return{t:'Activate '+o.n,s:(o.h?'From hand • ':'Set card • ')+(cd(o.n)[7]||'').slice(0,90),o:o}}).concat([{t:'No response',s:'Let it resolve',none:1}]),function(it){pmClose();if(it.none)return resolveChain();if(activate('ME',it.o))respond('OPP');else resolveChain()})}
+function activate(q,o){var R=o.R;if(R.cost&&!R.cost(q)){if(q=='ME')toast("Can't pay the cost");return false}var z=o.z;
+ if(o.h){z=free(q,'S');useH(q,o.n);S[q].z[z]={name:o.n,pos:'UP',atk:'',def:'',st:S.turn,set:S.turn}}else S[q].z[z].pos='UP';
+ var idx=CHAIN.l.length;CHAIN.l.push({type:/Trap/.test(cd(o.n)[1])?'trap':'spell',p:q,name:o.n,z:z,res:function(){R.r(q,CHAIN.l[0],idx)}});
+ L(q+' activates '+o.n+' (chain link '+(idx+1)+')');try{AU.sfx(/Trap/.test(cd(o.n)[1])?'trap':'spell')}catch(e){}toast((q=='ME'?'You':NAMES.OPP)+' chain '+o.n,0);save();return true}
+function resolveChain(){var C=CHAIN,l=C.l;for(var i=l.length-1;i>=0;i--){var k=l[i];
+  if(i==0){if(k.neg){L(k.name+' was negated');if(k.type=='spell'&&k.neg0)k.neg0()}else if(k.type=='attack'){if(!k.stop&&S[k.p].z[k.az]&&S[k.p].z[k.az].pos=='ATK'){NOTRAP=1;try{_fight15(k.p,k.az,k.tz&&S[oth(k.p)].z[k.tz]?k.tz:(mons(oth(k.p)).length?null:null))}finally{NOTRAP=0}}else if(k.stop)L('The attack was stopped')}else if(k.res)k.res();continue}
+  if(k.neg)L(k.name+' was negated');else{try{k.res()}catch(e){console.error(e)}}if(k.z&&S[k.p].z[k.z]&&S[k.p].z[k.z].name==k.name)toGY(k.p,k.z)}
+ CHAIN=null;save();try{render()}catch(e){}if(C.done)C.done()}
+// ---- Mike attacks
+function canAtk(k){var c=S.ME.z[k];return c&&c.pos=='ATK'&&tp()=='ME'&&S.phase==3&&S.turn>1&&c.at!=S.turn&&!BPEND&&!CHAIN}
+var _od15=openD;openD=function(p,k){var c=S[p].z[k];if(p=='ME'&&c&&k[0]=='M'&&tp()=='ME'&&S.phase==3&&c.pos=='ATK'&&!(typeof PICK!='undefined'&&PICK)){var x=nix(c.name);
+  var why=S.turn==1?'No attacks on the first turn of the duel':c.at==S.turn?'Already attacked this turn':BPEND?'The Battle Phase was ended':'';
+  return pmShow2(c.name+' • '+k+' • ATK '+c.atk,x,[{t:'⚔ Attack',s:'Choose a target',dis:why,f:function(){atkTargets(k)}},{t:'View card',s:'Zoomable close-up',f:function(){pmClose();if(x!=null)vzoom([x,hrar(c.name)])}},{t:'Cancel',cx:1,f:pmClose}])}
+ return _od15.apply(this,arguments)};
+function pmShow2(title,x,O){var z=pmEl();z.innerHTML='<div class="pmc">'+(x!=null?rcard(x,0):'')+'</div><h3>'+esc(title)+'</h3><div class="pmb">'+O.map(function(o,j){return'<button data-k="'+j+'"'+(o.dis?' disabled':'')+(o.cx?' class="cx"':'')+'>'+esc(o.t)+(o.s||o.dis?'<small>'+esc(o.dis||o.s)+'</small>':'')+'</button>'}).join('')+'</div>';
+ [].forEach.call(z.querySelectorAll('.pmb button'),function(b){b.onclick=function(){var o=O[+b.dataset.k];if(!o.dis)o.f()}})}
+function atkTargets(k){var A=S.ME.z[k],om=mons('OPP');var items=om.length?om.map(function(z){var c=S.OPP.z[z];return{t:c.pos=='DOWN'?'Set monster ('+z+')':c.name+' ('+z+')',s:c.pos=='DOWN'?'Face-down Defense':c.pos+' '+(c.pos=='ATK'?c.atk:c.def),z:z}}):[{t:'Direct Attack',s:A.atk+' damage to '+NAMES.OPP,z:null}];
+ pmList(A.name+' attacks…',items,function(it){pmClose();myAttack(k,it.z)})}
+function myAttack(az,tz){if(!canAtk(az))return toast('That monster cannot attack now');var A=S.ME.z[az];A.at=S.turn;try{AU._ok=1;AU.sfx('attack')}catch(e){}
+ try{var el=document.getElementById('z-ME-'+az);if(el){el.classList.add('atkfx');setTimeout(function(){el.classList.remove('atkfx')},600)}}catch(e){}
+ L('ME '+A.name+' attacks '+(tz?(S.OPP.z[tz].pos=='DOWN'?'a set monster':S.OPP.z[tz].name):'directly'));
+ setTimeout(function(){chainStart({type:'attack',p:'ME',az:az,tz:tz,name:A.name},function(){save()})},spd(350))}
+// ---- CPU negates Mike's spells (spell activation window)
+var _dp15=doPlace;doPlace=function(i,o){var n=M.hand[i];if(!CHAIN&&/^(SA|EQ|FU|MR|RX|FA|PB)$/.test(o.k||'')&&/Spell/.test(cd(n)[1]||'')){
+  CHAIN={l:[{type:'spell',p:'ME',name:n}],done:null};var R=respOpts('OPP');CHAIN=null;
+  if(R.length){var zz=PZONE;return chainStart({type:'spell',p:'ME',name:n,res:function(){PZONE=zz;_dp15(i,o)},neg0:function(){var j=M.hand.indexOf(n);if(j>=0){M.hand.splice(j,1);S.ME.GY.push(n)}pmClose()}},function(){save()})}}
+ return _dp15(i,o)};
+// ---- render hook: fit cards, attack glow
+var _re15=render;render=function(){var r=_re15.apply(this,arguments);try{zfit();['M1','M2','M3','M4','M5'].forEach(function(k){var e=document.getElementById('z-ME-'+k);if(e)e.classList.toggle('canatk',!!canAtk(k))})}catch(e){}return r};
+try{window.addEventListener('resize',function(){try{zfit()}catch(e){}})}catch(e){}
+/* ===== v15b: generic card effect engine ===== */
+var FXU={},FXBAT=0,FXN={one:1,two:2,three:3,1:1,2:2,3:3};
+function fxT(n){return lc(cd(n)[7]||'')}
+function fxGain(p,v){S[p].LP+=v;L(p+' gains '+v+' LP')}
+function fxDmg(p,v){dmg(p,v);L(p+' takes '+v+' damage')}
+function fxMZ(p,f){return mons(p).filter(function(z){return !f||f(S[p].z[z])})}
+function fxPick(p,items,title,cb){if(!items.length)return cb(null);if(p!='ME'||items.length==1)return cb(items[0]);
+ pmList(title,items.map(function(it){var c=S[it[0]].z[it[1]];return{t:(it[0]=='ME'?'Your ':'Opp ')+(c.pos=='SET'||c.pos=='DOWN'?(it[0]=='ME'?c.name+' (set)':'Set card'):c.name),it:it}}),function(x){pmClose();cb(x.it)})}
+function fxBest(list){return list.map(function(z){return z}).sort(function(a,b){return (+(S[b[0]].z[b[1]].atk)||0)-(+(S[a[0]].z[a[1]].atk)||0)})}
+function fxTg(p,kind,side){var r=[];[oth(p),p].forEach(function(q){if(side=='opp'&&q==p)return;if(side=='own'&&q!=p)return;
+ (kind=='M'?mons(q):kind=='S'?STs(q):mons(q).concat(STs(q))).forEach(function(z){if(!(FXSRC&&FXSRC[0]==q&&FXSRC[1]==z))r.push([q,z])})});return kind=='M'?fxBest(r):r}
+function fxDiscard(p,n,cb){var H=hand(p);n=Math.min(n,H.length);if(!n)return cb&&cb();
+ if(p!='ME'){for(var i=0;i<n;i++){var w=H.slice().sort(function(a,b){return stScore(a)+(+cd(a)[2]||0)-stScore(b)-(+cd(b)[2]||0)})[0];useH(p,w);S[p].GY.push(w)}L(p+' discards '+n);return cb&&cb()}
+ pmList('Discard '+n,H.map(function(h,i){return{t:h,i:i}}),function(x){pmClose();var c=H.splice(x.i,1)[0];S.ME.GY.push(c);L('ME discards '+c);save();try{render()}catch(e){}fxDiscard(p,n-1,cb)})}
+function fxSS(p,name,from,pos){var z=free(p,'M');if(!z)return false;S[p].z[z]={name:name,pos:pos||'ATK',atk:String(cd(name)[2]),def:String(cd(name)[3]),st:S.turn};L(p+' Special Summons '+name+' from '+from);return true}
+function fxSearch(p,test,cb){var pl=S[p].pile,i=-1;for(var j=pl.length-1;j>=0;j--)if(test(cd(pl[j]))){i=j;break}
+ if(i<0){L(p+' finds no card');return}var c=pl.splice(i,1)[0];hand(p).push(c);S[p].deck=pl.length;L(p+' adds '+(p=='ME'?c:'a card')+' from Deck to hand')}
+function fxGone(q,z,how){var c=S[q].z[z];if(!c)return;if(how=='ban'){(S[q].BAN=S[q].BAN||[]).push(c.name);delete S[q].z[z];L(c.name+' is banished')}
+ else if(how=='hand'){hand(q).push(c.name);delete S[q].z[z];L(c.name+' returns to hand')}else if(how=='deck'){S[q].pile.unshift(c.name);delete S[q].z[z];L(c.name+' returns to Deck')}
+ else{kill(q,z);L(c.name+' is destroyed')}}
+function fxUp(p,cb){save();try{render()}catch(e){}cb&&cb()}
+/* hand-coded cards */
+var FXC={
+ 'pot of greed':function(p){drawP(p,2);L(p+' draws 2')},
+ 'graceful charity':function(p,cb){drawP(p,3);fxDiscard(p,2,cb);return 1},
+ 'card destruction':function(p,cb){[p,oth(p)].forEach(function(q){var n=hand(q).length;S[q].GY=S[q].GY.concat(hand(q).splice(0));drawP(q,n)});L('Both players discard and redraw')},
+ 'delinquent duo':function(p,cb){S[p].LP-=1000;var o=oth(p),H=hand(o);for(var i=0;i<2&&H.length;i++)S[o].GY.push(H.splice(Math.floor(Math.random()*H.length),1)[0]);L(o+' discards 2')},
+ 'confiscation':function(p){S[p].LP-=1000;var o=oth(p),H=hand(o);if(H.length){var w=H.slice().sort(function(a,b){return stScore(b)+(+cd(b)[2]||0)-stScore(a)-(+cd(a)[2]||0)})[0];useH(o,w);S[o].GY.push(w);L(p+' discards '+w+' from '+o+' hand')}},
+ 'the forceful sentry':function(p){var o=oth(p),H=hand(o);if(H.length){var w=H.slice().sort(function(a,b){return stScore(b)+(+cd(b)[2]||0)-stScore(a)-(+cd(a)[2]||0)})[0];useH(o,w);S[o].pile.unshift(w);L(w+' returned to '+o+' Deck')}},
+ 'painful choice':function(p){var pl=S[p].pile;var t=pl.splice(-5);if(!t.length)return;var k=t.sort(function(a,b){return (+cd(b)[2]||0)-(+cd(a)[2]||0)})[0];hand(p).push(k);t.splice(t.indexOf(k),1);S[p].GY=S[p].GY.concat(t);L(p+' Painful Choice: keeps 1, 4 to GY')},
+ 'scapegoat':function(p){for(var i=0;i<4;i++){var z=free(p,'M');if(z)S[p].z[z]={name:'Sheep Token',pos:'DEF',atk:'0',def:'0',st:S.turn,tok:1}}L(p+' summons Sheep Tokens')},
+ 'swords of revealing light':function(p){var o=oth(p);mons(o).forEach(function(z){if(S[o].z[z].pos=='DOWN')S[o].z[z].pos='DEF'});S.swords={p:p,until:S.turn+5};L(o+" can't attack for 3 turns");return 2},
+ 'ring of destruction':function(p,cb){fxPick(p,fxTg(p,'M','opp').filter(function(x){return S[x[0]].z[x[1]].pos!='DOWN'}),'Ring of Destruction target',function(t){if(!t)return cb();var a=+S[t[0]].z[t[1]].atk||0;fxGone(t[0],t[1]);fxDmg('ME',a);fxDmg('OPP',a);cb()});return 1},
+ 'chaos emperor dragon - envoy of the end':function(p){var n=0;['ME','OPP'].forEach(function(q){n+=hand(q).length+mons(q).length+STs(q).length;mons(q).concat(STs(q)).forEach(function(z){toGY(q,z)});S[q].GY=S[q].GY.concat(hand(q).splice(0))});S[p].LP-=1000;fxDmg(oth(p),300*n)},
+ 'tribe-infecting virus':function(p){var o=oth(p),c={};mons(o).forEach(function(z){var r=cd(S[o].z[z].name)[6];c[r]=(c[r]||0)+1});var r=Object.keys(c).sort(function(a,b){return c[b]-c[a]})[0];if(!r)return;fxDiscard(p,1);[o,p].forEach(function(q){mons(q).forEach(function(z){if(cd(S[q].z[z].name)[6]==r&&S[q].z[z].pos!='DOWN')fxGone(q,z)})})},
+ 'breaker the magical warrior':function(p,cb){fxPick(p,fxTg(p,'S'),'Breaker: destroy a Spell/Trap',function(t){if(t)fxGone(t[0],t[1]);cb()});return 1},
+ 'jinzo':function(){},
+ 'sinister serpent':function(){},
+ 'cyber jar':function(p){['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){toGY(q,z)});var t=S[q].pile.splice(-5);t.forEach(function(n){if(/Monster/.test(cd(n)[1])&&+cd(n)[4]<=4)fxSS(q,n,'Cyber Jar',Math.random()<.5?'ATK':'DOWN');else hand(q).push(n)})});L('Cyber Jar resolves')},
+ 'morphing jar':function(){['ME','OPP'].forEach(function(q){S[q].GY=S[q].GY.concat(hand(q).splice(0));drawP(q,5)});L('Both players discard and draw 5')}
+};
+var FXBATTLE={'mystic tomato':function(c){return /DARK/.test(c[5])&&+c[2]<=1500},'giant rat':function(c){return /EARTH/.test(c[5])&&+c[2]<=1500},'pyramid turtle':function(c){return /Zombie/.test(c[6])&&+c[3]<=2000},'shining angel':function(c){return /LIGHT/.test(c[5])&&+c[2]<=1500},'flying kamakiri #1':function(c){return /WIND/.test(c[5])&&+c[2]<=1500},'mother grizzly':function(c){return /WATER/.test(c[5])&&+c[2]<=1500},'nimble momonga':function(c){return c[0]=='Nimble Momonga'}};
+var FXGY={'sangan':function(c){return /Monster/.test(c[1])&&+c[2]<=1500},'witch of the black forest':function(c){return /Monster/.test(c[1])&&+c[3]<=1500}};
+/* generic parser: returns true if something was handled */
+function fxGeneric(p,n,cb){var t=fxT(n),o=oth(p),h=0,m,wait=0;
+ if(m=t.match(/increase your life points by (\d+)/)){fxGain(p,+m[1]);h=1}
+ if(m=t.match(/inflicts? (\d+) (?:points of )?damage to (?:your )?opponent/)){fxDmg(o,+m[1]);h=1}
+ else if(m=t.match(/inflict (\d+) damage/)){fxDmg(o,+m[1]);h=1}
+ if(m=t.match(/draw (one|two|three|\d) cards?/)){drawP(p,FXN[m[1]]);L(p+' draws '+FXN[m[1]]);h=1}
+ if(/destroy all monsters on the field/.test(t)){[p,o].forEach(function(q){mons(q).forEach(function(z){fxGone(q,z)})});h=1}
+ else if(/destroy all (?:face-up )?monsters your opponent controls|destroy all monsters on your opponent/.test(t)){mons(o).forEach(function(z){fxGone(o,z)});h=1}
+ if(/destroy all spell (?:and|&) trap cards (?:on the field)?(?!.*your opponent)/.test(t)&&!/opponent controls/.test(t)){[p,o].forEach(function(q){STs(q).forEach(function(z){fxGone(q,z)})});h=1}
+ else if(/destroy all spell (?:and|&) trap cards your opponent controls/.test(t)){STs(o).forEach(function(z){fxGone(o,z)});h=1}
+ if(!h&&((m=t.match(/(destroy|return|remove from play|banish|take control of|change)\D{0,40}?(1|one|2|two) (?:face-up )?(monster|spell or trap card|spell\/trap|card)/))||(m=t.match(/(?:target|select) (1|one|2|two) (?:face-up )?(monster|spell or trap card|spell\/trap|card)[^.;]*[;,] (destroy|return|remove from play|banish|take control of|change)/))&&(m=[m[0],m[3],m[1],m[2]]))){m.index=t.indexOf(m[0]);
+  var act=m[1],k=/monster/.test(m[3])?'M':/spell/.test(m[3])?'S':'A',side=/your opponent controls|opponent's/.test(t)?'opp':act=='take control of'?'opp':'';
+  var how=act=='destroy'?'':act=='return'?(/deck/.test(t.slice(m.index,m.index+120))?'deck':'hand'):act=='change'?'flip':act=='take control of'?'ctl':'ban';
+  var cnt=FXN[m[2]]||1,list=fxTg(p,k,side);if(side!='opp')list=list.filter(function(x){return x[0]==o}).concat(list.filter(function(x){return x[0]==p}));
+  if(list.length){wait=1;(function go(i){if(i>=cnt||!list.length)return fxUp(p,cb);fxPick(p,list,n+': choose target',function(x){list=list.filter(function(y){return y!=x});
+   if(how=='flip'){var c=S[x[0]].z[x[1]];c.pos='DOWN';L(c.name+' set face-down')}else if(how=='ctl'){var c=S[x[0]].z[x[1]],z=free(p,'M');if(z){delete S[x[0]].z[x[1]];S[p].z[z]=c;c.ctl={from:x[0],until:/end phase/.test(t)?S.turn:0};L(p+' takes control of '+c.name)}}else fxGone(x[0],x[1],how);go(i+1)})})(0)}h=1}
+ if(!h&&/special summon/.test(t)&&/graveyard/.test(t)&&!/this card/.test(t.slice(0,40))){var g=(/either/.test(t)?[p,o]:[p]).reduce(function(a,q){return a.concat(S[q].GY.filter(function(x){return /Monster/.test(cd(x)[1])&&!/Fusion|Ritual/.test(cd(x)[1])}).map(function(x){return[q,x]}))},[]).sort(function(a,b){return (+cd(b[1])[2]||0)-(+cd(a[1])[2]||0)});
+  if(g.length&&free(p,'M')){var s=g[0];S[s[0]].GY.splice(S[s[0]].GY.lastIndexOf(s[1]),1);fxSS(p,s[1],'GY')}h=1}
+ if(!h&&/add (?:1|one) .*from your deck to your hand/.test(t)){fxSearch(p,function(c){return /Monster/.test(c[1])});h=1}
+ if(m=t.match(/(increase|decrease)s? the atk (?:of [^.]*?)?by (\d+)/)){var v=+m[2]*(m[1]=='increase'?1:-1),tg=v>0?fxTg(p,'M','own'):fxTg(p,'M','opp');if(tg.length){var c=S[tg[0][0]].z[tg[0][1]];c.atk=String(Math.max(0,+c.atk+v));L(c.name+' ATK '+(v>0?'+':'')+v)}h=1}
+ if(/negate the attack/.test(t)){h=1}
+ if(!h)FXU[n]=1;if(!wait)fxUp(p,cb);return h}
+function fxRun(p,n,cb){cb=cb||function(){};var f=FXC[lc(n)];if(f){var r=f(p,function(){fxUp(p,cb)});if(r!=1)fxUp(p,cb);return true}return fxGeneric(p,n,cb)}
+/* skip cards with their own handlers */
+var FXSKIP=/^(monster reborn|premature burial|call of the haunted|change of heart)$/;
+function fxCover(){var tot=0,ok=0,un=[];CARDS.forEach(function(c){var t=lc(c[7]||'');if(/Normal Monster/.test(c[1])||!t)return;tot++;
+ var gen=/(target|select) (1|one|2|two) [^.;]*[;,] (destroy|return|banish|take control|change)|flip:|increase your life points by|inflicts? \d+|draw (one|two|three|\d) card|destroy all|(destroy|return|remove from play|banish|take control of|change)\D{0,40}?(1|one|2|two) (face-up )?(monster|spell|card)|special summon|from your deck to your hand|(increase|decrease)s? the atk|negate/.test(t);
+ if(FXC[lc(c[0])]||FXBATTLE[lc(c[0])]||FXGY[lc(c[0])]||(typeof RESP!='undefined'&&RESP[lc(c[0])])||gen||/Equip|Field|Fusion|Ritual/.test(c[1]))ok++;else un.push(c[0])});return{tot:tot,ok:ok,pct:Math.round(ok*1000/tot)/10,un:un}}
+/* hooks: place */
+var _pl15b=place;place=function(p,k,name,pos,atk,def,forced,extra){var old=S[p].z[k]?JSON.parse(JSON.stringify(S[p].z[k])):null,r=_pl15b.apply(this,arguments);if(r||FXOFF)return r;
+ var c=S[p].z[k];if(!c)return r;var ty=cd(c.name)[1]||'',nm=lc(c.name);
+ if(k[0]=='S'&&c.pos=='UP'&&(!old||old.pos=='SET')&&!FXSKIP.test(nm)&&!(typeof RESP!='undefined'&&RESP[nm]&&!/Spell/.test(ty))){
+  if(/Trap|Spell/.test(ty)&&!/Continuous|Equip|Field|Ritual/.test(ty)||nm=='swords of revealing light'){try{AU.sfx(/Trap/.test(ty)?'trap':'spell')}catch(e){}
+   FXSRC=[p,k];var keep=nm=='swords of revealing light';fxRun(p,c.name,function(){FXSRC=null;if(!keep&&S[p].z[k]&&S[p].z[k].name==c.name)toGY(p,k);save();try{render()}catch(e){}});if(nm=='swords of revealing light'){keep=1}}}
+ if(k[0]=='M'&&/Effect/.test(ty)){var flip=old&&old.pos=='DOWN'&&c.pos!='DOWN',sum=c.pos!='DOWN'&&(!old||flip);
+  if(flip&&/flip:/.test(fxT(c.name)))fxRun(p,c.name);else if(sum&&FXC[nm]&&/normal summoned|summoned/.test(fxT(c.name))&&nm!='cyber jar'&&nm!='morphing jar')fxRun(p,c.name)}
+ return r};
+/* flip via battle, GY triggers, battle-destroy floaters */
+var _fi15b=fight;fight=function(p,az,tz){var o=oth(p),D=tz&&S[o].z[tz],wasDown=D&&D.pos=='DOWN',dn=D&&D.name;FXBAT=1;var r;try{r=_fi15b.apply(this,arguments)}finally{FXBAT=0}
+ if(wasDown&&/flip:/.test(fxT(dn))){fxRun(o,dn)}return r};
+var _gy15b=toGY;toGY=function(p,z){var c=S[p].z[z];_gy15b(p,z);if(!c||FXOFF)return;var nm=lc(c.name);
+ if(FXGY[nm])fxSearch(p,FXGY[nm]);
+ if(FXBATTLE[nm]&&FXBAT){var t=FXBATTLE[nm];var pl=S[p].pile;for(var j=pl.length-1;j>=0;j--)if(t(cd(pl[j]))){var n=pl.splice(j,1)[0];S[p].deck=pl.length;fxSS(p,n,'Deck');break}if(nm=='nimble momonga')S[p].LP+=1000}
+ if(nm=='sinister serpent')c.ss=1;
+ if(c.ctl&&c.ctl.from&&p!=c.ctl.from){S[p].GY.pop();S[c.ctl.from].GY.push(c.name)}};
+var FXOFF=0,FXSRC=null;
+/* Change of Heart control returns at end of turn; Swords stop attacks */
+var _ca15b=typeof canAtk=='function'?canAtk:null;if(_ca15b)canAtk=function(k){if(S.swords&&S.swords.p!='ME'&&S.turn<S.swords.until)return false;return _ca15b(k)};
+var _fi2=fight;fight=function(p,az,tz){if(S.swords&&S.swords.p!=p&&S.turn<S.swords.until){L('Swords of Revealing Light stops the attack');return}return _fi2.apply(this,arguments)};
+/* AI uses generic spells it doesn't already play */
+var _ai15b=aiTurn;aiTurn=function(p){_ai15b(p);try{var H=hand(p);H.slice().forEach(function(n){var c=cd(n),t=lc(c[7]||'');if(!/Normal Spell|Quick/.test(c[1])||FXSKIP.test(lc(n)))return;
+ if(/increase your life points|inflicts? \d+|draw (one|two|three|\d) card/.test(t)&&!/discard/.test(t)||lc(n)=='swords of revealing light'||lc(n)=='confiscation'||lc(n)=='delinquent duo'){var z=free(p,'S');if(z&&S.phase==2||z&&S.phase==4){useH(p,n);var r=place(p,z,n,'UP','','',true,'');if(r)hand(p).push(n)}}})}catch(e){}};
+/* LP roll + flash */
+var LPV={};function lpAnim(){['ME','OPP'].forEach(function(p){var el=document.getElementById('n'+p);if(!el)return;var to=S[p].LP,fr=LPV[p]==null?to:LPV[p];LPV[p]=to;if(fr==to)return;
+ el.classList.remove('lpup','lpdn');void el.offsetWidth;el.classList.add(to>fr?'lpup':'lpdn');var t0=performance.now(),D=spd?spd(700):700;
+ (function st(){var k=Math.min(1,(performance.now()-t0)/D);el.textContent=Math.round(fr+(to-fr)*k);if(k<1)requestAnimationFrame(st)})();try{AU.sfx(to>fr?'heal':'dmg')}catch(e){}})}
+var _rn15b=render;render=function(){_rn15b.apply(this,arguments);try{if(typeof document!='undefined')lpAnim()}catch(e){}};
+/* ===== v15c: activate own Set Trap / Quick-Play / Spell from the field ===== */
+function setActWhy(k){var c=S.ME.z[k];if(!c||c.pos!='SET')return 'Not a Set card';var ty=cd(c.name)[1]||'',nm=lc(c.name),my=tp()=='ME';
+ if(/Trap|Quick/.test(ty)&&c.set==S.turn)return 'Set this turn: can be activated from the next turn';
+ if(/Spell/.test(ty)&&!/Quick/.test(ty)&&(!my||!(S.phase==2||S.phase==4)))return 'Normal Spells: only in your Main Phase';
+ if(typeof CHAIN!='undefined'&&CHAIN&&CHAIN.l&&CHAIN.l.length)return 'Use the Respond? prompt during a chain';
+ if(typeof RESP!='undefined'&&RESP[nm]&&!/book of moon/.test(nm)&&!fxT(c.name).match(/^(?!.*when).*/))return 'Needs its trigger (e.g. an attack/summon) - you will get a Respond? prompt';
+ if(/^(mirror force|sakuretsu armor|negate attack|magic cylinder|trap hole|bottomless trap hole|torrential tribute|solemn judgment|magic jammer|seven tools of the bandit|trap jammer)$/.test(nm))return 'Needs its trigger - you will get a Respond? prompt then';
+ return ''}
+function setAct(k){var c=S.ME.z[k],w=setActWhy(k);if(w){toast(w);return}var r=place('ME',k,c.name,'UP','','',true,'');if(r)toast(r);else{L('ME activates '+c.name);save();try{render()}catch(e){}}}
+var _oD15c=openD;openD=function(p,k){var c=S[p].z[k];
+ if(p=='ME'&&k[0]=='S'&&c&&c.pos=='SET'&&!(typeof PZONE!='undefined'&&PZONE)&&typeof pmList=='function'){var w=setActWhy(k);
+  return pmList(c.name+' (Set)',[{t:'Activate',s:w?'⛔ '+w:(cd(c.name)[7]||'').slice(0,90),a:1,dis:w},{t:'Details',d:1},{t:'Cancel',x:1}],function(it){pmClose();if(it.a)setAct(k);else if(it.d)_oD15c(p,k)})}
+ return _oD15c(p,k)};
 </script></body></html>
