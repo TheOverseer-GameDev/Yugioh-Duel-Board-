@@ -1997,6 +1997,197 @@ fxCover=function(){var tot=0,ok=0,un=[],by={},bad={};CARDS.forEach(function(c){v
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*@@v17a.js*//* v17a: event hub + per-card handler table (HK) + Union/Gemini/Spirit/Toon/control systems */
 var HK={};function hk(n){return HK[lc(n||'')]}
 function up(c){return c&&c.pos!='DOWN'&&c.pos!='SET'}
@@ -2699,6 +2890,171 @@ if(typeof startDuel=='function'){var _sd17i=startDuel;startDuel=function(){CPUBU
  var _zv17i=zoneView;zoneView=function(p,k){var r=_zv17i.apply(this,arguments);try{var a=(k=='BAN'?(S[p].BAN||[]):S[p].GY).slice().reverse();
   [].forEach.call(document.querySelectorAll('.gyv .gyc'),function(e,i){e.style.cursor='pointer';e.onclick=function(){ovClose();VC(a,i)}})}catch(e){}return r}})();
 /*@@end v17i.js*/
+/*@@v17j.js*//* v17j: text-accurate targeted effects */
+function up17j(c){return c&&c.pos!='DOWN'&&c.pos!='SET'}
+function ms17j(q,f){return mons(q).filter(function(z){return !f||f(S[q].z[z])}).map(function(z){return [q,z]})}
+function tg17j(p,l,t,cb){if(!l.length){L('No valid target');cb(null);return 1}fxPick(p,l,t,function(x){cb(x);});return 1}
+function tc17j(p,cb){return function(x){if(x){try{x(),0}catch(e){}}cb()}}
+function ctl17j(q,z){var o=oth(q),f=free(o,'M');if(!f)return;var c=S[q].z[z];delete S[q].z[z];S[o].z[f]=c;c.tc17={home:q,t:S.turn};L(o+' takes control of '+c.name+' until the End Phase')}
+var _fte17j=fxTempEnd;fxTempEnd=function(){_fte17j.apply(this,arguments);['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c&&c.tc17&&c.tc17.t<S.turn){var h=c.tc17.home,f=free(h,'M');delete c.tc17;delete S[q].z[z];if(f){S[h].z[f]=c;L(c.name+' returns to '+h)}else{S[h].GY.push(c.name)}}})})}
+var _rn17j=render;render=function(){try{if(S&&S.ME){(S.dh17||[]).slice().forEach(function(d){if(S.turn>=d.r&&free(d.p,'M')){S[d.p].z[free(d.p,'M')]=d.c;S.dh17.splice(S.dh17.indexOf(d),1);L(d.c.name+' returns (Dimensionhole)')}});['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c&&c.gp17&&c.gp17.t==S.turn&&c.pos=='DEF'){var p=c.gp17.p;delete c.gp17;drawP(p,1);L(p+' draws 1 (Guard Penalty)')}})})}}catch(e){}return _rn17j.apply(this,arguments)}
+function fx17j(n,f){FXC[n]=function(p,cb){var r=f(p,cb,oth(p));if(r!==1){cb&&cb()}return 1}}
+fx17j('fissure',function(p,cb,o){var l=ms17j(o,up17j);if(!l.length){L('Fissure: no face-up monster');return}var A=function(x){return +S[x[0]].z[x[1]].atk||0},lo=Math.min.apply(null,l.map(A)),t=l.filter(function(x){return A(x)==lo});var go=function(x){if(x){L('Fissure destroys '+S[x[0]].z[x[1]].name+' (lowest ATK)');fxGone(x[0],x[1])}cb()};if(t.length>1&&p=='ME')return tg17j(p,t,'Fissure: tied lowest ATK - choose',go);t.sort(function(a,b){return (+S[b[0]].z[b[1]].def||0)-(+S[a[0]].z[a[1]].def||0)});go(t[0]);return 1});
+fx17j('a rival appears!',function(p,cb,o){return tg17j(p,ms17j(o,up17j),'A Rival Appears!: select monster',function(t){if(t){var lv=+cd(S[t[0]].z[t[1]].name)[4];var i=hand(p).findIndex(function(n){return /Monster/.test(cd(n)[1])&&+cd(n)[4]==lv});if(i>=0&&free(p,'M')){var n=hand(p).splice(i,1)[0];fxSS(p,n,'hand')}else L('No matching Level monster in hand')}cb()})});
+fx17j('acid trap hole',function(p,cb,o){return tg17j(p,ms17j(o,function(c){return c.pos=='DOWN'}).concat(ms17j(p,function(c){return c.pos=='DOWN'})),'Acid Trap Hole: target',function(t){if(t){var c=S[t[0]].z[t[1]];L(c.name+' is flipped');if(+cd(c.name)[3]<=2000)fxGone(t[0],t[1]);else L(c.name+' returns face-down')}cb()})});
+fx17j('altar for tribute',function(p,cb){return tg17j(p,ms17j(p),'Altar for Tribute: select',function(t){if(t){var n=S[t[0]].z[t[1]].name;toGY(t[0],t[1]);var a=base(n,2);S[p].LP+=a;L(p+' gains '+a+' LP')}cb()})});
+fx17j('block attack',function(p,cb,o){return tg17j(p,ms17j(o,function(c){return c.pos=='ATK'}),'Block Attack: target',function(t){if(t){S[t[0]].z[t[1]].pos='DEF';L(S[t[0]].z[t[1]].name+' to Defense')}cb()})});
+fx17j('deal of phantom',function(p,cb,o){return tg17j(p,ms17j(p,up17j).concat(ms17j(o,up17j)),'Deal of Phantom: select',function(t){if(t){var k=S[p].GY.filter(function(n){return /Monster/.test(cd(n)[1])}).length;fxTemp(t[0],t[1],100*k,0)}cb()})});
+fx17j('dimensionhole',function(p,cb){return tg17j(p,ms17j(p),'Dimensionhole: select',function(t){if(t){var c=S[t[0]].z[t[1]];delete S[t[0]].z[t[1]];(S.dh17=S.dh17||[]).push({p:p,c:c,r:S.turn+2});L(c.name+' is removed until your next Standby Phase')}cb()})});
+fx17j('energy drain',function(p,cb,o){return tg17j(p,ms17j(p,up17j),'Energy Drain: target',function(t){if(t){var k=hand(o).length*200;fxTemp(t[0],t[1],k,k)}cb()})});
+fx17j('guard penalty',function(p,cb,o){return tg17j(p,ms17j(p).concat(ms17j(o)),'Guard Penalty: select',function(t){if(t){S[t[0]].z[t[1]].gp17={p:p,t:S.turn};L('Guard Penalty on '+S[t[0]].z[t[1]].name)}cb()})});
+fx17j('h - heated heart',function(p,cb){return tg17j(p,ms17j(p,up17j),'Heated Heart: target',function(t){if(t){fxTemp(t[0],t[1],500,0);S[t[0]].z[t[1]].pierce17=S.turn}cb()})});
+fx17j('micro ray',function(p,cb,o){return tg17j(p,ms17j(o,up17j).concat(ms17j(p,up17j)),'Micro Ray: select',function(t){if(t)fxTemp(t[0],t[1],0,0,[null,0]);cb()})});
+['mind control'].forEach(function(n){fx17j(n,function(p,cb,o){return tg17j(p,ms17j(o,n=='mind control'?up17j:null),n+': target',function(t){if(t){ctl17j(t[0],t[1]);if(n=='mind control')fxFlag('noatk:'+S[p].z[mons(p).slice(-1)[0]].name,p)}cb()})})});
+fx17j('miracle kids',function(p,cb,o){return tg17j(p,ms17j(o,up17j),'Miracle Kids: select',function(t){if(t){var k=S[p].GY.filter(function(n){return lc(n)=='miracle kids'}).length;fxTemp(t[0],t[1],-400*k,-400*k)}cb()})});
+fx17j('misfortune',function(p,cb,o){return tg17j(p,ms17j(o,up17j),'Misfortune: select',function(t){if(t){var d=Math.floor(base(S[t[0]].z[t[1]].name,2)/2);dmg(o,d);fxFlag('noattack',p)}cb()})});
+fx17j('next to be lost',function(p,cb){return tg17j(p,ms17j(p,up17j),'Next to be Lost: select',function(t){if(t){var n=S[t[0]].z[t[1]].name;toGY(t[0],t[1]);var i=S[p].pile.indexOf(n);if(i>=0){S[p].pile.splice(i,1);S[p].GY.push(n);L(n+' sent from Deck to GY')}}cb()})});
+[['reinforcements',500],['rush recklessly',700]].forEach(function(a){fx17j(a[0],function(p,cb,o){return tg17j(p,ms17j(p,up17j).concat(ms17j(o,up17j)),a[0]+': select',function(t){if(t)fxTemp(t[0],t[1],a[1],0);cb()})})});
+fx17j('shield crush',function(p,cb,o){return tg17j(p,ms17j(o,function(c){return c.pos=='DEF'||c.pos=='DOWN'}).concat(ms17j(p,function(c){return c.pos=='DEF'||c.pos=='DOWN'})),'Shield Crush: select',function(t){if(t)fxGone(t[0],t[1]);cb()})});
+fx17j('shrink',function(p,cb,o){return tg17j(p,ms17j(o,up17j).concat(ms17j(p,up17j)),'Shrink: target',function(t){if(t){var c=S[t[0]].z[t[1]];fxTemp(t[0],t[1],-Math.floor(base(c.name,2)/2),0)}cb()})});
+fx17j("shien's spy",function(p,cb){return tg17j(p,ms17j(p),"Shien's Spy: target",function(t){if(t)ctl17j(t[0],t[1]);cb()})});
+fx17j('unity',function(p,cb){return tg17j(p,ms17j(p,up17j),'Unity: target',function(t){if(t){var s=ms17j(p,up17j).reduce(function(a,x){return a+base(S[x[0]].z[x[1]].name,3)},0);fxTemp(t[0],t[1],0,0,[null,s])}cb()})});
+fx17j('union attack',function(p,cb){return tg17j(p,ms17j(p,function(c){return c.pos=='ATK'}),'Union Attack: target',function(t){if(t){var s=ms17j(p,function(c){return c.pos=='ATK'}).filter(function(x){return x[1]!=t[1]}).reduce(function(a,x){return a+(+S[x[0]].z[x[1]].atk||0)},0);fxTemp(t[0],t[1],s,0);fxFlag('nobd',p)}cb()})});
+
+/* Soul Exchange: tribute-only + no Battle Phase */
+fx17j('soul exchange',function(p,cb,o){return tg17j(p,ms17j(o),'Soul Exchange: target',function(t){if(t){S.se17={p:p,q:t[0],c:S[t[0]].z[t[1]],t:S.turn};fxFlag('nobp',p);L(p+' may Tribute '+S[t[0]].z[t[1]].name+' this turn; no Battle Phase')}cb()})});
+function se17j(p){var x=S.se17;if(!x||x.p!=p||x.t!=S.turn)return null;var z=mons(x.q).filter(function(k){return S[x.q].z[k]===x.c})[0];return z?[x.q,z]:null}
+var _tp17j=tribPick;tribPick=function(need,cb,minLv){var t=se17j('ME');if(!t)return _tp17j.apply(this,arguments);var f=free('ME','M');if(!f)return _tp17j.apply(this,arguments);var c=S.OPP.z[t[1]];delete S.OPP.z[t[1]];S.ME.z[f]=c;c.se17h=t[1];var back=function(){var k=mons('ME').filter(function(z){return S.ME.z[z]===c})[0];if(k){delete S.ME.z[k];S.OPP.z[c.se17h]=c;delete c.se17h}};
+ var _cl=pmClose;pmClose=function(){pmClose=_cl;back();return _cl.apply(this,arguments)};
+ return _tp17j(need,function(sel){pmClose=_cl;if(sel.indexOf(f)<0){back();toast('Soul Exchange: you must Tribute '+c.name);return}var k=sel.indexOf(f);delete c.se17h;S.se17=null;cb(sel)},minLv)};
+var _nph17j=nphNext;nphNext=function(){var n=_nph17j.apply(this,arguments);if(n==3&&tp()=='ME'&&(fxHas('nobp','ME')||fxHas('noattack','ME'))){L('No Battle Phase this turn');return 4}return n};
+var _ca17j=canAtk;canAtk=function(k){return !fxHas('nobp','ME')&&!fxHas('noattack','ME')&&_ca17j.apply(this,arguments)};
+/* Hero Mask: name change until End Phase */
+fx17j('hero mask',function(p,cb){return tg17j(p,ms17j(p,up17j),'Hero Mask: target',function(t){if(t){var i=S[p].pile.findIndex(function(n){return /^Elemental HERO/.test(n)&&/Monster/.test(cd(n)[1])});if(i>=0){var n=S[p].pile.splice(i,1)[0];S[p].GY.push(n);var c=S[t[0]].z[t[1]];c.hm17={o:c.name,t:S.turn};L(c.name+' becomes '+n+' until the End Phase');c.name=n}else L('No Elemental HERO in Deck')}cb()})});
+var _fe17k=fxTempEnd;fxTempEnd=function(){_fe17k.apply(this,arguments);['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c&&c.hm17&&c.hm17.t<S.turn){c.name=c.hm17.o;delete c.hm17}})})};
+/* Shield Spear (this DB: Normal Trap, +400 ATK/DEF this turn) */
+fx17j('shield spear',function(p,cb,o){return tg17j(p,ms17j(p,up17j).concat(ms17j(o,up17j)),'Shield Spear: target',function(t){if(t)fxTemp(t[0],t[1],400,400);cb()})});
+/* Metalmorph: real equip */
+fx17j('metalmorph',function(p,cb,o){var src=(FXSRC&&FXSRC[0]==p&&S[p].z[FXSRC[1]]&&lc(S[p].z[FXSRC[1]].name)=='metalmorph')?FXSRC[1]:STs(p).filter(function(z){var c=S[p].z[z];return lc(c.name)=='metalmorph'&&!c.eq})[0];
+ return tg17j(p,ms17j(p,up17j).concat(ms17j(o,up17j)),'Metalmorph: equip to',function(t){if(t&&src&&S[p].z[src]){var e=S[p].z[src],T=S[t[0]].z[t[1]];e.pos='UP';e.eq=t[0]+':'+t[1];e.eqn=T.name;e.eqd=[300,300];T.atk=String(+T.atk+300);T.def=String(+T.def+300);e.hold17=1;L('Metalmorph equipped to '+T.name+' (+300 ATK/DEF)')}cb()})});
+var _gy17j=toGY;toGY=function(p,z){var c=S[p].z[z];if(c&&c.hold17){delete c.hold17;return}return _gy17j.apply(this,arguments)};
+function mm17j(p,z){var r=0;STs(p).concat(STs(oth(p))).forEach(function(q){[p,oth(p)].forEach(function(s){var e=S[s].z[q];if(e&&lc(e.name)=='metalmorph'&&e.eq==p+':'+z)r=1})});return r}
+/* Damage Step flag + Metalmorph attack bonus + battle blocks */
+var _tra17j=trapOnAttack;trapOnAttack=function(){var d=S.dmgStep;S.dmgStep=0;try{return _tra17j.apply(this,arguments)}finally{S.dmgStep=d}};
+var _fi17j=fight;fight=function(p,az,tz){if(fxHas('nobp',p)||fxHas('noattack',p)){L(p+' cannot attack this turn');return}var A=S[p].z[az],b=0;if(A&&tz&&S[oth(p)].z[tz]&&mm17j(p,az)){b=Math.floor((+S[oth(p)].z[tz].atk||0)/2);A.atk=String(+A.atk+b)}S.dmgStep=1;try{return _fi17j.apply(this,arguments)}finally{S.dmgStep=0;if(b&&S[p].z[az]===A)A.atk=String(+A.atk-b)}};
+/* Spell Speed + Damage Step response filter */
+function spd17(n){var t=cd(n)[1]||'';return /Counter/.test(t)?3:/Trap|Quick|Monster/.test(t)?2:1}
+var _ro17j=respOpts;respOpts=function(q){var O=_ro17j.apply(this,arguments);if(!CHAIN||!O.length)return O;var top=CHAIN.l[CHAIN.l.length-1],ts=top.type=='attack'?1:spd17(top.name||'');
+ return O.filter(function(o){var s=spd17(o.n);if(s<2||s<ts)return false;if(S.dmgStep&&s<3&&!/(gains?|loses?) \d+ (atk|def)|atk\/def/i.test(cd(o.n)[7]||''))return false;return true})};
+/* Field Spell replacement: only one active Field Spell */
+var _pl17j=place;place=function(p,k,n,pos){var old=k=='FIELD'?null:0,r;var other=k=='FIELD'&&pos!='SET'?oth(p):null;r=_pl17j.apply(this,arguments);if(!r&&k=='FIELD'&&pos!='SET'){[p,oth(p)].forEach(function(q){var f=S[q].z.FIELD;if(f&&!(q==p&&f.name==n)&&f.pos!='SET'){L(f.name+' is destroyed (Field Spell replaced)');toGY(q,'FIELD')}})}return r};
+/* Exodia: instant win */
+var EXO17=['Exodia the Forbidden One','Right Leg of the Forbidden One','Left Leg of the Forbidden One','Right Arm of the Forbidden One','Left Arm of the Forbidden One'];
+function exo17(){if(!S||!S.ME||S.ME.LP<=0||S.OPP.LP<=0)return;['ME','OPP'].forEach(function(p){var h=hand(p)||[];if(EXO17.every(function(x){return h.indexOf(x)>=0})){S[oth(p)].LP=0;S.exo17=p;L((p=='ME'?'Mike':'OPP')+' assembles Exodia - wins the duel!');try{toast('Exodia! '+(p=='ME'?'You win':'You lose'),1)}catch(e){}}})}
+var _dp17j=drawP;drawP=function(){var r=_dp17j.apply(this,arguments);exo17();return r};
+var _rn17k=render;render=function(){try{exo17()}catch(e){}return _rn17k.apply(this,arguments)};
+/* Advanced edit gate */
+var _okD17j=okD;okD=function(){if(duelLive()){toast('Manual edits are off during a duel - play from your hand');try{dlg.style.display='none'}catch(e){}return}return _okD17j.apply(this,arguments)};
+var _pms17j=pmShow;pmShow=function(i,t,O){if(O&&duelLive())O=O.filter(function(o){return !/^Advanced edit/.test(o.t||'')});return _pms17j.call(this,i,t,O)};
+var _od17j=openD;openD=function(p,k){var r=_od17j.apply(this,arguments);try{if(duelLive())[].forEach.call(document.querySelectorAll('.pmb button'),function(b){if(/^Advanced edit/.test(b.innerText))b.remove()})}catch(e){}return r};
+/* generic Counter Trap responses from card text */
+(function(){if(typeof RESP!='object'||!RESP['magic jammer'])return;var NEG=RESP['magic jammer'].r,DC=RESP['magic jammer'].cost;CARDS.forEach(function(c){var n=lc(c[0]),t=(c[7]||'').toLowerCase();if(RESP[n]||!/Counter Trap/.test(c[1]||'')||!/negate the (activation|summon|special summon|normal summon)/.test(t))return;
+ var sum=/summon/.test(t),sp=/spell/.test(t),tr=/trap/.test(t),eff=/monster effect|effect monster|effect of a monster|monster's effect/.test(t),cnt=/counter trap/.test(t);
+ RESP[n]={w:function(x){var ty=x.type;if(cnt)return ty=='trap'&&/Counter/.test(cd(x.name)[1]||'');return (sum&&ty=='summon')||(sp&&ty=='spell')||(tr&&ty=='trap')||(eff&&ty=='effect')},
+  cost:function(q){var m;if(/pay half your life points/.test(t)){S[q].LP=Math.ceil(S[q].LP/2);return 1}if(m=t.match(/pay (\d+) life points/)){if(S[q].LP<=+m[1])return 0;dmg(q,+m[1]);return 1}if(/discard 1 (spell )?card/.test(t))return DC(q);if(/tribute 1 monster/.test(t)){var z=mons(q)[0];if(!z)return 0;toGY(q,z);return 1}return 1},
+  r:NEG,ai:function(x){return cScore0(x.name||'')>=2000||x.type=='summon'}}})})();
+fx17j('earthquake',function(){['ME','OPP'].forEach(function(q){mons(q).forEach(function(z){var c=S[q].z[z];if(c.pos=='ATK'){c.pos='DEF';L(c.name+' to Defense (Earthquake)')}})})});
+/* card lifetimes: one-shot Spells/Traps -> GY after resolving; Equips -> GY when monster leaves */
+function life17(){if(!S||!S.ME||CHAIN||FXSRC||(typeof PICK!='undefined'&&PICK))return;['ME','OPP'].forEach(function(p){STs(p).forEach(function(z){var c=S[p].z[z];if(!c||!c.name||c.pos=='SET'||c.pos=='DOWN')return;var ty=cd(c.name)[1]||'';
+ if(c.eq){var e=String(c.eq).split(':'),T=S[e[0]]&&S[e[0]].z[e[1]];if(!T||(c.eqn&&T.name!=c.eqn&&!T.hm17)){L(c.name+' goes to the GY (equipped monster left)');_gy17j(p,z)}return}
+ if(/Continuous|Field|Equip/.test(ty))return;if(lc(c.name)=='swords of revealing light'&&S.swords&&S.turn<S.swords.until)return;
+ if(/(Normal|Quick-Play|Ritual) Spell|Normal Trap|Counter Trap|^Spell/.test(ty)){L(c.name+' goes to the GY');_gy17j(p,z)}})})}
+var _sv17j=save;save=function(){try{life17()}catch(e){}return _sv17j.apply(this,arguments)};
+var _rn17l=render;render=function(){try{life17()}catch(e){}return _rn17l.apply(this,arguments)};
+/*@@end v17j.js*/
+/*@@v17k.js*//* ===== v17k: Tribute Summon with a full field ===== */
+var _pm17k=placeMenu;placeMenu=function(i){var n=M.hand[i];
+ if(n&&isMon(n)&&!free('ME','M')){var O=legalOpts('ME',n).filter(function(o){return(o.k=='TA'||o.k=='TS')&&!o.dis});
+  if(O.length){O.forEach(function(o){o.s=(o.s||'')+' • goes into a tributed zone';o.f=function(){PICK=null;pzHi();doPlace(i,o)}});O.push({t:'Cancel',cx:1,f:pmClose});return pmShow(i,'Tribute Summon '+n,O)}}
+ return _pm17k.apply(this,arguments)};
+var _dp17k=doPlace;doPlace=function(i,o){if(o&&(o.k=='TA'||o.k=='TS')){var pz=PZONE,_tp=tribPick;tribPick=function(need,cb,minLv){tribPick=_tp;return _tp.call(this,need,function(t){var s=(t||[]).filter(function(q){return/^M[1-5]$/.test(q)}).sort();
+   var go=function(z){PZONE=z;return cb(t)};
+   if(pz&&s.indexOf(pz)>=0)return go(pz);if(pz&&!S.ME.z[pz])return go(pz);
+   if(s.length>1)return pmList('Place in which freed zone?',s.map(function(z){return{t:z,s:'Freed by tribute',v:z}}),function(it){go(it.v)});
+   return go(s[0]||pz)},minLv)};return _dp17k.apply(this,arguments)}
+ return _dp17k.apply(this,arguments)};
+/*@@end v17k.js*/
+/*@@v17l.js*//* ===== v17l: pack reveal uses real card renderer + foil, tap = big viewer ===== */
+var _ov17l=ov;ov=function(h){var e=_ov17l.apply(this,arguments);try{[].forEach.call(e.querySelectorAll('.pk .pc'),function(pc){var b=pc.querySelector('.b');if(!b||pc.dataset.rc)return;
+ var n=(b.querySelector('b')||{}).textContent,m=(b.className.match(/r(\d)/)||[0,0]),r=+m[1],x=nix(n);if(x==null)return;
+ pc.dataset.rc=1;pc.classList.add('pc17');pc.innerHTML='<div><div class="a"></div><div class="b pcr">'+rcard(x,r)+'</div></div>';
+ pc.onclick=function(ev){if(!pc.classList.contains('f'))return;ev.stopPropagation();vzoom([x,r])}})}catch(err){}return e};
+(function(){var s=document.createElement('style');s.textContent='.pk .pc17 .b.pcr{padding:0;background:none;overflow:visible}.pk .pc17 .b.pcr>*{width:100%;height:100%}.pk .pc17{cursor:pointer}';var h=document.head||document.documentElement||document.body;if(h&&h.appendChild)h.appendChild(s)})();
+/*@@end v17l.js*/
+/*@@v17m.js*//* ===== v17m: Classic loop: Deck Edit after packs -> Next Match; random 5-15 tournament trigger ===== */
+newTrigger=function(){PRO.played=0;PRO.trig=5+Math.floor(Math.random()*11)};
+function mProg17(){var n=(PRO.played||0)+1,left=(PRO.trig||10)-(PRO.played||0);return 'Match '+n+(left<=2?' · Tournament coming soon':'')}
+var _ro17m=roster;roster=function(){var r=_ro17m.apply(this,arguments);try{var e=document.getElementById('ovx');if(e&&!PRO.tour){var d=[].filter.call(e.querySelectorAll('div'),function(x){return/^Next tournament in/.test(x.textContent)})[0];if(d){d.className='mp17';d.textContent=mProg17()}
+ if(PRO.lastOpp)[].forEach.call(e.querySelectorAll('.ros div[data-n]'),function(x){if(x.dataset.n==PRO.lastOpp){x.classList.add('ros17x');x.onclick=null;x.title='Just played'}})}}catch(err){}return r};
+var C0_17m=null;
+var _me17m=matchEnd;matchEnd=function(win){if(PRO.mode!='classic'||SIMM)return _me17m.apply(this,arguments);C0_17m=JSON.parse(JSON.stringify(PRO.coll||{}));PRO.lastOpp=S.opp||NAMES.OPP;var bo=S.match&&SET15.bo3,pre=bo?(S.match.w+S.match.l):0;
+ var r=_me17m.apply(this,arguments);if(bo&&S.match&&S.match.w<2&&S.match.l<2)return r; // mid Bo3
+ var bi=OVQ.indexOf(bracket);var go=function(){deckEdit17(function(){if(PRO.tour)bracket();else roster()})};
+ if(bi>=0)OVQ.splice(bi,1,go);else OVQ.push(go);return r};
+function newOf17(n){var a=(PRO.coll||{})[n]||0,b=(C0_17m||PRO.coll||{})[n]||0;return a>b}
+function dkErr17(){var L=M.list,c={},e=[];L.forEach(function(n){c[n]=(c[n]||0)+1});if(L.length<40)e.push('Needs at least 40 cards');if(L.length>60)e.push('Max 60 cards');
+ Object.keys(c).forEach(function(n){var mx=Math.min(3,flMax(n));if(c[n]>mx)e.push(n+': max '+mx+(mx<3?' (2007 list)':''))});return e}
+function dkKind17(n){var t=cd(n)[1]||'';return/Fusion/.test(t)?'Fusion':/Ritual/.test(t)?'Ritual':/Monster/.test(t)?'Monster':/Spell/.test(t)?'Spell':/Trap/.test(t)?'Trap':''}
+var DE17={f:'All',cb:null};
+function deckEdit17(cb){DE17.cb=cb||DE17.cb;var inD={};M.list.concat(M.fus||[]).forEach(function(n){inD[n]=(inD[n]||0)+1});var F=DE17.f,ok=function(n){return F=='All'||dkKind17(n)==F||(F=='Monster'&&/Fusion|Ritual/.test(dkKind17(n))&&false)};
+ var col=Object.keys(PRO.coll||{}).filter(ok).sort(function(a,b){return(newOf17(b)-newOf17(a))||a.localeCompare(b)}),dk=Object.keys(inD).filter(ok).sort();
+ var row=function(n,side){var x=nix(n),k=dkKind17(n),own=(PRO.coll||{})[n]||0,u=inD[n]||0,mx=Math.min(3,flMax(n)),c=cd(n);
+  return '<div class="de17r'+(newOf17(n)?' new':'')+'" data-n="'+esc(n)+'" data-s="'+side+'"><span class="k k'+k+'"></span><span class="nm">'+esc(n)+(newOf17(n)?' <i>NEW</i>':'')+'<small>'+k+(c[2]!==''&&c[2]!=null?' · '+c[2]+'/'+c[3]:'')+(mx<3?' · '+(mx?'Limit '+mx:'Forbidden'):'')+'</small></span><span class="ct">'+(side=='c'?u+'/'+own:'×'+u)+'</span><button class="vw" data-v="'+esc(n)+'">🔍</button></div>'};
+ var e=dkErr17(),cnt=M.list.length;
+ var h='<div class="de17"><h1>Deck Edit</h1><div class="de17s '+(e.length?'bad':'good')+'">Main Deck '+cnt+'/40–60 · Extra '+(M.fus||[]).length+(e.length?'<br><small>'+esc(e.slice(0,2).join(' • '))+'</small>':' ✓')+'</div>'+
+  '<div class="de17f">'+['All','Monster','Spell','Trap','Fusion','Ritual'].map(function(f){return'<button class="'+(f==F?'on':'')+'" data-f="'+f+'">'+f+'</button>'}).join('')+'</div>'+
+  '<div class="de17c"><div><h3>Your Deck <small>tap to remove</small></h3><div class="de17l">'+(dk.map(function(n){return row(n,'d')}).join('')||'<p>No cards</p>')+'</div></div>'+
+  '<div><h3>Collection <small>tap to add</small></h3><div class="de17l">'+(col.map(function(n){return row(n,'c')}).join('')||'<p>No cards</p>')+'</div></div></div>'+
+  '<button class="big" id="de17n"'+(e.length?' disabled':'')+'>'+(PRO.tour?'Next: Tournament Round '+(PRO.tour.round+1):'Next Match')+'</button><div class="mp17">'+(PRO.tour?'Tournament in progress':mProg17())+'</div></div>';
+ var o=ov(h);o.classList.add('de17o');var sc=o.querySelectorAll('.de17l');
+ [].forEach.call(o.querySelectorAll('.de17f button'),function(b){b.onclick=function(){DE17.f=b.dataset.f;deckEdit17()}});
+ [].forEach.call(o.querySelectorAll('.de17r'),function(r){r.onclick=function(ev){var n=r.dataset.n,s=[].map.call(sc,function(x){return x.scrollTop});if(ev.target.classList.contains('vw')){var x=nix(n);if(x!=null)vzoom([x,hrar(n)]);return}
+  var fu=isFus(n),A=fu?(M.fus=M.fus||[]):M.list;
+  if(r.dataset.s=='d'){var i=A.lastIndexOf(n);if(i>=0)A.splice(i,1)}else{var u=A.filter(function(q){return q==n}).length,mx=Math.min(3,flMax(n));if(u>=((PRO.coll||{})[n]||0))return toast('You own only '+((PRO.coll||{})[n]||0));if(u>=mx)return toast('Max '+mx+' copies');if(!fu&&M.list.length>=60)return toast('Main Deck max 60');A.push(n)}
+  save();try{dbR()}catch(e){}deckEdit17();[].forEach.call(document.querySelectorAll('#ovx .de17l'),function(x,j){x.scrollTop=s[j]||0})}});
+ document.getElementById('de17n').onclick=function(){if(dkErr17().length)return toast(dkErr17()[0]);C0_17m=null;ovClose();var f=DE17.cb;DE17.cb=null;f&&f()}}
+(function(){var s=document.createElement('style');s.textContent=
+'#ovx.de17o{align-items:stretch;overflow:auto}.de17{width:100%;max-width:900px;margin:0 auto;padding:12px 12px 20px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;animation:de17in .3s ease}'+
+'@keyframes de17in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}.de17 h1{font-size:24px;margin:0}.de17 h3{font-size:15px;margin:4px 0 6px;text-align:left}.de17 h3 small{opacity:.6;font-weight:normal;font-size:12px}'+
+'.de17s{padding:8px 12px;border-radius:10px;font-size:15px;line-height:1.4}.de17s.good{background:rgba(40,200,120,.18);border:1px solid #2c8}.de17s.bad{background:rgba(255,80,80,.15);border:1px solid #e55}'+
+'.de17f{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.de17f button{padding:7px 12px;font-size:14px;border-radius:16px;min-width:auto;margin:0}.de17f button.on{background:#29d8ff;color:#012}'+
+'.de17c{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.de17c{grid-template-columns:1fr}}.de17l{max-height:38vh;overflow:auto;border:1px solid rgba(41,216,255,.35);border-radius:10px;padding:4px;background:rgba(0,0,0,.25)}'+
+'.de17r{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;text-align:left;transition:background .15s}.de17r:hover{background:rgba(41,216,255,.12)}.de17r+.de17r{border-top:1px solid rgba(255,255,255,.06)}'+
+'.de17r .k{width:6px;align-self:stretch;border-radius:3px;background:#c90}.de17r .kSpell{background:#1a9}.de17r .kTrap{background:#b3a}.de17r .kFusion{background:#86c}.de17r .kRitual{background:#48f}'+
+'.de17r .nm{flex:1;min-width:0;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis}.de17r .nm small{display:block;font-size:11.5px;opacity:.7}.de17r .nm i{font-style:normal;font-size:10px;font-weight:bold;background:#fc3;color:#210;padding:1px 5px;border-radius:6px;vertical-align:2px}'+
+'.de17r.new{background:rgba(255,204,51,.10)}.de17r .ct{font-size:13px;opacity:.85;white-space:nowrap}.de17r .vw{padding:4px 7px;margin:0;min-width:auto;font-size:13px;background:none;border:1px solid rgba(255,255,255,.25)}'+
+'#de17n{align-self:center;min-width:220px}#de17n[disabled]{opacity:.45}.mp17{font-size:15px;color:#9ff;margin:4px 0 8px}.ros17x{opacity:.35;pointer-events:none}';
+var h=document.head||document.documentElement||document.body;if(h&&h.appendChild)h.appendChild(s)})();
+/* post-match sequence lock: nothing may close the result/pack/deck-edit overlays early */
+var POST17=0,_oc17m=ovClose;ovClose=function(){if(POST17&&!POST17ok)return;return _oc17m.apply(this,arguments)};var POST17ok=0;
+var _me17m2=matchEnd;matchEnd=function(win){if(PRO.mode=='classic'&&!SIMM)POST17=1;return _me17m2.apply(this,arguments)};
+var _de17m=deckEdit17;deckEdit17=function(cb){var r=_de17m.apply(this,arguments);var b=document.getElementById('de17n');if(b){var f=b.onclick;b.onclick=function(){if(dkErr17().length)return toast(dkErr17()[0]);POST17=0;return f.apply(this,arguments)}}return r};
+function dkFix17(){M.list=flFix(M.list);var own=Object.keys(PRO.coll||{}).filter(function(n){return!isFus(n)&&isMon(n)}).sort(function(a,b){return cAtk(b)-cAtk(a)});var k=0;
+ while(M.list.length<40&&k<own.length*3){var n=own[k%own.length];k++;var u=M.list.filter(function(q){return q==n}).length;if(u<Math.min(3,flMax(n),PRO.coll[n]||0))M.list.push(n)}while(M.list.length>60)M.list.pop();save();try{dbR()}catch(e){}}
+var _de17f=deckEdit17;deckEdit17=function(cb){var r=_de17f.apply(this,arguments);var b=document.getElementById('de17n');if(b&&b.disabled){var f=document.createElement('button');f.className='big';f.id='de17fx';f.textContent='Auto-fix deck';f.style.cssText='align-self:center;min-width:220px;background:#e55';f.onclick=function(){dkFix17();deckEdit17()};b.parentNode.insertBefore(f,b)}return r};
+(function(){var s=document.createElement('style');s.textContent='.de17o{background:#06101c!important}.de17{padding-top:58px}.de17r .vw{flex:none!important;width:34px!important;height:30px;position:static!important;display:inline-flex!important;align-items:center;justify-content:center;transform:none!important}#de17fx{margin:0 auto}@media(max-width:640px){.de17l{max-height:32vh}}';(document.head||document.documentElement||document.body).appendChild(s)})();
+/*@@end v17m.js*/
+/*@@v17n.js*//* v17n: curious face-down probing + learned face-down stats */
+function fdStats17(){PRO.fd17=PRO.fd17||{n:0,flip:0,wall:0};return PRO.fd17}
+function probeP17(atk){var d=String((typeof SET15!='undefined'&&SET15.diff)||'normal').toLowerCase(),s=fdStats17(),fr=(s.flip+1)/(s.n+4),wr=(s.wall+1)/(s.n+4);
+ var p={easy:.35,normal:.3,hard:.2}[d]||.3;if(atk>=2000)p+=.35;else if(atk>=1600)p+=.15;else if(atk<1200&&d!='easy')p+=.15;
+ p-=(fr+wr)*(d=='hard'?.6:d=='easy'?.2:.4);return Math.max(.05,Math.min(.9,p))}
+var _sd17n=seenDef;seenDef=function(o,c){var v=_sd17n.apply(this,arguments);if(!c||c.pos!='DOWN'||o!='ME'||typeof S=='undefined')return v;
+ if(!c.pr17||c.pr17[0]!=S.turn){var a=0;MZ(oth(o)).forEach(function(z){var m=S[oth(o)].z[z];if(m&&m.pos=='ATK'&&m.at!=S.turn)a=Math.max(a,+m.atk||0)});c.pr17=[S.turn,a>0&&a<=v&&Math.random()<probeP17(a)]}
+ return c.pr17[1]?0:v};
+var _fi17n=fight;fight=function(p,az,tz){var o=oth(p),D=tz&&S[o]&&S[o].z[tz],A=S[p]&&S[p].z[az],rec=p=='OPP'&&D&&D.pos=='DOWN'&&A,n=rec&&D.name,df=rec&&+cd(D.name)[3],aa=rec&&+A.atk;
+ var r=_fi17n.apply(this,arguments);if(rec){var s=fdStats17();s.n++;if(/FLIP/i.test(cd(n)[7]||'')||/Flip/.test(cd(n)[1]||''))s.flip++;if(df>=aa)s.wall++}return r};
+/*@@end v17n.js*/
 /*@@v17z.js*/K({'Alien Psychic':{alienpsy:1},'Darklord Nurse Reficule':{revGain:1}});
 Object.keys(HK).forEach(function(n){var h=HK[n];if(h.union&&!h.ign)h.ign=function(p,k){k[0]=='M'?unionEq(p,k):unionOff(p,k)};
  if(h.gem){var g2=h.ign;h.ign=function(p,k,c){if(c.gemi===0){c.gemi=1;L(c.name+' is Gemini Summoned')}else if(g2)g2(p,k,c)}}});
