@@ -172,11 +172,13 @@ body{padding-top:34px}
 #pm .pmc{width:min(42vw,180px);margin:4px 0 8px;flex:0 0 auto}
 .zfr1{box-shadow:inset 0 0 0 2px #dfe6f0,0 0 6px #cfd8e8}.zfr2{box-shadow:inset 0 0 0 2px #8fe0ff,0 0 8px #6cf}.zfr3{box-shadow:inset 0 0 0 2px #ffd84a,0 0 10px #fc4}.zfr4{box-shadow:inset 0 0 0 2px #f6f,0 0 10px #9cf,0 0 14px #ff8}.zfr5{box-shadow:inset 0 0 0 3px #c8a046,0 0 10px #e6c46c}
 .rb{font-style:normal;font-size:10px;padding:1px 4px;border-radius:4px;margin-left:2px;color:#111;background:#ccd}.rb2{background:#8fe0ff}.rb3{background:#ffd84a}.rb4{background:linear-gradient(90deg,#f8a,#fd6,#8f8,#8cf,#c8f)}.rb5{background:#c8a046;color:#fff}
+#nphb{background:linear-gradient(#2a7bd8,#1652a0);color:#fff;font-weight:700;border:1px solid #8fd0ff;border-radius:8px;padding:6px 12px;box-shadow:0 0 8px #3af8}#nphb:disabled{background:#2a3242;color:#8a96aa;border-color:#445;box-shadow:none}
+#ph span.phx{opacity:.35;pointer-events:none}
 </style></head><body><div class="wrap">
 <div class="ctl"><button id="spk" onclick="AU.toggle()">&#128264;</button> <input id="vol" type="range" min="0" max="100" style="width:90px;vertical-align:middle" oninput="AU.vol(this.value)"> Turn <b id="turn">1</b> <button onclick="nextTurn()">Next turn</button> <button onclick="cpuTurn()">CPU turn</button>
 <span class="ph" id="ph"></span></div>
 <div id="OPP"></div><div id="ME"></div>
-<div class="ctl"><b>Your hand</b> <button onclick="drawC()">Draw</button> <button onclick="shuf();toast('Deck shuffled',1)">Shuffle</button> <button onclick="var b=document.getElementById('db');b.style.display=b.style.display=='none'?'block':'none';dbR()">Deck Builder</button>
+<div class="ctl"><b>Your hand</b> <button onclick="shuf();toast('Deck shuffled',1)">Shuffle</button> <button onclick="var b=document.getElementById('db');b.style.display=b.style.display=='none'?'block':'none';dbR()" id="dbbtn">Deck Builder</button><button id="nphb" onclick="nextPhase()" style="display:none">Next Phase</button>
 <div id="hand" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px"></div>
 <div id="db" style="display:none;margin-top:8px;border-top:1px solid #29d8ff;padding-top:6px">
 <div style="position:relative"><input id="dbq" placeholder="Search card to add..." style="width:100%" autocomplete="off"><div id="dbac" style="background:#06122a;border:1px solid #29d8ff;max-height:240px;overflow:auto"></div></div>
@@ -207,7 +209,7 @@ function zoneHTML(p,k){var c=S[p].z[k],st=k[0]!='M'&&k!='FIELD',cls='z'+(st?' st
  return '<div id="z-'+p+'-'+k+'" title="'+(c&&(p=='ME'||(c.pos!='SET'&&c.pos!='DOWN'))?esc(tip(c.name)):'')+'" class="'+cls+'" onclick="openD(\''+p+'\',\''+k+'\')">'+t+'</div>'}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return'&#'+c.charCodeAt(0)+';'})}
 function render(){document.getElementById('turn').textContent=S.turn;var fe=document.getElementById('fpl');if(fe)fe.value=S.first||'ME';
- document.getElementById('ph').innerHTML=PH.map(function(n,i){return'<span class="'+(i==S.phase?'on':'')+'" onclick="S.phase='+i+';save()">'+n+'</span>'}).join('');
+ document.getElementById('ph').innerHTML=PH.map(function(n,i){return'<span class="'+(i==S.phase?'on':'')+'" onclick="phGo('+i+')">'+n+'</span>'}).join('');
  ['OPP','ME'].forEach(function(p){var f=S[p],m='',s='';for(var i=1;i<=5;i++){m+=zoneHTML(p,'M'+i);s+=zoneHTML(p,'S'+i)}
   var side='<div class="z" onclick="openD(\''+p+'\',\'FIELD\')" style="border-color:#c9f">'+zoneHTML(p,'FIELD').replace(/^<div[^>]*>|<\/div>$/g,'')+'</div>';
   side=zoneHTML(p,'FIELD');
@@ -239,7 +241,7 @@ function showGY(p){var g=S[p].GY,t=g.length?g.map(function(n,i){return(i+1)+'. '
  if(r){if(/^\d+$/.test(r))g.splice(+r-1,1);else g.push(r);save()}}
 function applyTxt(txt){txt.split(/[;\n]/).forEach(function(cmd){cmd=cmd.trim();if(!cmd)return;
  var m=cmd.match(/^(OPP|ME)\s+([A-Z0-9]+)\s*([=+-])\s*(.*)$/i);if(!m){if(/^TURN=/i.test(cmd))S.turn=+cmd.split('=')[1]||S.turn;
-  else if(/^PHASE=/i.test(cmd)){var i=PH.map(function(x){return x.toUpperCase()}).indexOf(cmd.split('=')[1].trim().toUpperCase());if(i>=0)S.phase=i}return}
+  else if(/^PHASE=/i.test(cmd)){var i=PH.map(function(x){return x.toUpperCase()}).indexOf(cmd.split('=')[1].trim().toUpperCase());if(i>=0&&i>=S.phase)S.phase=i;else if(i>=0)toast("Phases can't go backwards")}return}
  var p=m[1].toUpperCase(),k=m[2].toUpperCase(),op=m[3],v=m[4].trim(),f=S[p],frc=false;if(v[0]=='!'){frc=true;v=v.slice(1).trim()}
  if(k=='LP'){var n=+v||0;f.LP=op=='='?n:Math.max(0,f.LP+(op=='+'?n:-n));return}
  if(k=='DECK'){f.deck=+v||0;return}
@@ -527,7 +529,7 @@ function fight(p,az,tz){var o=oth(p),A=S[p].z[az];A.at=S.turn;if(trapOnAttack(o,
  else{var dd=+D.def;if(pa>dd){kill(o,tz);L(A.name+' destroys DEF '+D.name)}else if(pa<dd){dmg(p,dd-pa);L(A.name+' bounces off '+D.name)}}}
 function aiTurn(p){var o=oth(p),T=S.turn,f=S[p];if(!f.hand)setupSide(p,AIDECK);
  S.phase=0;drawP(p,1);if(f.out){L(p+' cannot draw - decks out!');f.LP=0;return}
- S.phase=2;var H=hand(p),done=false,act=function(n){useH(p,n);f.GY.push(n)};
+ S.phase=1;try{ssStandby()}catch(e){}S.phase=2;var H=hand(p),done=false,act=function(n){useH(p,n);f.GY.push(n)};
  function spell(n){return H.indexOf(n)>=0&&free(p,'S')}
  if(spell('Pot of Greed')){act('Pot of Greed');drawP(p,2);L(p+' plays Pot of Greed')}
  if(spell('Graceful Charity')){act('Graceful Charity');drawP(p,3);for(var k=0;k<2;k++){var w=H.slice().sort(function(a,b){return val(a)-val(b)})[0];useH(p,w);f.GY.push(w)}L(p+' plays Graceful Charity')}
@@ -565,7 +567,7 @@ function aiTurn(p){var o=oth(p),T=S.turn,f=S[p];if(!f.hand)setupSide(p,AIDECK);
 
 function nextTurn(){S.turn++;S.phase=0;save();if(tp()=='OPP')setTimeout(cpuTurn,700)}
 function cpuTurn(){if(tp()!='OPP')return toast("It's your turn");if(S.ME.LP<=0||S.OPP.LP<=0)return;aiTurn('OPP');S.OPP.deck=S.OPP.pile.length;save();
- if(S.ME.LP>0&&S.OPP.LP>0)setTimeout(function(){S.turn++;S.phase=0;save();toast('Your turn - draw a card',1)},900);else toast(S.ME.LP<=0?NAMES.OPP+' wins!':'You win!',1)}
+ if(S.ME.LP>0&&S.OPP.LP>0)setTimeout(function(){S.turn++;S.phase=0;save();toast('Your turn',1)},900);else toast(S.ME.LP<=0?NAMES.OPP+' wins!':'You win!',1)}
 var _pl2=place;place=function(p,k,name,pos,atk,def,forced,extra){var had=!!S[p].z[k];var r=_pl2(p,k,name,pos,atk,def,forced,extra);
  if(!r&&p=='ME'&&!had&&k[0]=='M'&&S.OPP.hand)trapOnSummon('OPP','ME',k);return r};
 var _sd=startDuel;startDuel=function(){_sd();setupSide('OPP',AIDECK);save();if(tp()=='OPP')setTimeout(cpuTurn,700)};
@@ -1133,4 +1135,40 @@ var _rs14c=realStart;realStart=function(){_rs14c.apply(this,arguments);try{var f
  if(PRO.mode=='classic'&&PRO.du&&PRO.du[n]){var co=PRO.du[n].coll;Object.keys(co).forEach(function(x){if(isFus(x))for(var j=f.fus.filter(function(q){return q==x}).length;j<co[x]&&f.fus.length<15;j++)f.fus.push(x)});
   if(f.fus.length&&co['Polymerization']&&f.pile.concat(f.hand).indexOf('Polymerization')<0){var w=f.pile.map(function(x,i){return[x,i]}).filter(function(q){return isMon(q[0])}).sort(function(a,b){return cAtk(a[0])-cAtk(b[0])})[0];if(w)f.pile[w[1]]='Polymerization'}}
  while(f.hand.length<5&&f.pile.length)f.hand.push(f.pile.pop());f.deck=f.pile.length;save()}catch(e){}};
+/* ===== v14d: one automatic draw per turn, auto Draw->Standby->Main1 ===== */
+var DRAWFX=0,_dc14d=drawC;
+drawC=function(n){if(n===5||DRAWFX)return _dc14d(n);toast('You draw 1 card automatically in your Draw Phase. Extra draws only come from card effects.',1)};
+function effDraw(n){DRAWFX++;try{for(var i=0;i<n;i++){if(!M.pile.length){meDeckOut();return}_dc14d(1)}}finally{DRAWFX--}try{AU._ok=1;AU.sfx('draw')}catch(e){}}
+function meDeckOut(){S.ME.LP=0;L('Mike cannot draw - deck out! Mike loses.');toast('Your Deck is empty - you lose the duel!',1);save()}
+var PHT=null;function meDrawPhase(){if(S.dr==S.turn||PHT)return;if(S.ME.LP<=0||S.OPP.LP<=0)return;
+ if(!M.list||!M.list.length||(!M.pile.length&&!M.hand.length&&!Object.keys(S.ME.z).length))return;
+ S.dr=S.turn;S.phase=0;if(!M.pile.length){meDeckOut();return}
+ DRAWFX++;try{_dc14d(1)}finally{DRAWFX--}L('T'+S.turn+' Draw Phase: Mike draws 1 card');try{AU._ok=1;AU.sfx('draw')}catch(e){}
+ PHT=setTimeout(function(){S.phase=1;try{ssStandby()}catch(e){}save();PHT=setTimeout(function(){PHT=null;if(S.phase==1){S.phase=2;save();toast('Main Phase 1',0)}},650)},700)}
+var _re14d=render;render=function(){var r=_re14d.apply(this,arguments);try{if(tp()=='ME'&&S.phase<=1&&S.dr!=S.turn&&!(typeof SIMM!='undefined'&&SIMM))setTimeout(meDrawPhase,0);else if(tp()=='ME'&&S.phase<=1&&S.dr==S.turn&&!PHT)PHT=setTimeout(function(){PHT=null;if(S.phase<=1&&S.dr==S.turn){if(S.phase==0){S.phase=1;try{ssStandby()}catch(e){}}S.phase=2;save()}},400)}catch(e){}return r};
+// phase bar: no going back to Draw/Standby, no skipping the draw
+function phGo(i){if(tp()!='ME')return toast("It's not your turn");if(i<=1&&S.dr==S.turn)return toast('You already drew this turn');if(S.dr!=S.turn)return toast('Draw Phase first');if(i<S.phase)return toast("Phases can't go backwards");S.phase=i;save()}
+// card-effect draws for Mike
+var DRAWEFF={'pot of greed':2,'graceful charity':3,'upstart goblin':1,'jar of greed':1,'card of sanctity':-1};
+var _pl14d=place;place=function(p,k,name,pos,atk,def,forced,extra){var r=_pl14d.apply(this,arguments);var d=DRAWEFF[lc(name||'')];
+ if(!r&&p=='ME'&&d&&k&&k[0]=='S'&&pos=='UP'){setTimeout(function(){if(d>0)effDraw(d);else{effDraw(Math.max(0,6-M.hand.length));for(var q=0;q<6-S.OPP.hand.length;q++)drawP('OPP',1)}
+  if(lc(name)=='upstart goblin')S.OPP.LP+=1000;L('Mike resolves '+name+(d>0?': draws '+d:''));if(S.ME.z[k]&&S.ME.z[k].name==name)toGY('ME',k);save();
+  if(lc(name)=='graceful charity')gcDiscard(2)},0)}return r};
+function gcDiscard(n){if(!n)return save();pmList('Graceful Charity: discard '+n+' card'+(n>1?'s':''),M.hand.map(function(h,i){return{t:h,i:i}}),function(it){var c=M.hand.splice(it.i,1)[0];S.ME.GY.push(c);L('Mike discards '+c);save();setTimeout(function(){gcDiscard(n-1)},50)})}
+/* ===== v14e: Next Phase button replaces Deck Builder during duels ===== */
+var PHN=['Draw','Standby','Main 1','Battle','Main 2','End'];
+function nphNext(){var ph=S.phase;if(ph<2)return 2;if(ph==2)return S.turn==1?5:3;if(ph<5)return ph+1;return 6}
+function nextPhase(){if(tp()!='ME'||S.ME.LP<=0||S.OPP.LP<=0)return toast("It's not your turn");if(S.phase<2)return toast('Drawing…');var n=nphNext();
+ try{pmClose()}catch(e){}if(n==6){L('T'+S.turn+' End Phase - turn passes to '+(NAMES.OPP||'CPU'));return nextTurn()}
+ if(S.turn==1&&n==5&&S.phase==2)toast('No Battle Phase on the first turn',0);S.phase=n;save()}
+function nphUpd(){var b=document.getElementById('nphb'),d=document.getElementById('dbbtn');if(!b||!d)return;var live=false;try{live=duelLive()&&S.ME.LP>0&&S.OPP.LP>0}catch(e){}
+ d.style.display=live?'none':'';b.style.display=live?'':'none';var my=tp()=='ME',n=nphNext();b.disabled=!my||S.phase<2;
+ b.innerHTML=!my?'Opponent\'s turn…':S.phase<2?PHN[S.phase]+'…':PHN[S.phase]+' → '+(n==6?'End turn':PHN[n])}
+var _re14e=render;render=function(){var r=_re14e.apply(this,arguments);try{nphUpd()}catch(e){}return r};
+var _sm14e=showMode;showMode=function(){_sm14e.apply(this,arguments);var m=document.getElementById('mode');if(m&&!document.getElementById('dbmb')){var b=document.createElement('button');b.className='big';b.id='dbmb';b.innerHTML='DECK BUILDER<br><small>Edit your Main &amp; Fusion Deck</small>';b.onclick=function(){if(!PRO.mode)return toast('Pick Arcade or Classic first',1);m.style.display='none';var d=document.getElementById('db');d.style.display='block';dbR();try{d.scrollIntoView()}catch(e){}};m.appendChild(b)}};
+/* ===== v14f: phases only move forward (logic guard) ===== */
+function phGuard(){if(S.pt!==S.turn){S.pt=S.turn;S.pm=S.phase;return}if(S.phase<S.pm){S.phase=S.pm}else S.pm=S.phase}
+var _sv14f=save;save=function(){try{phGuard()}catch(e){}return _sv14f.apply(this,arguments)};
+var _re14f=render;render=function(){try{phGuard()}catch(e){}var r=_re14f.apply(this,arguments);try{[].forEach.call(document.querySelectorAll('#ph span'),function(sp,i){sp.className=(i==S.phase?'on':'')+(i<S.phase||tp()!='ME'||(S.turn==1&&i==3)?' phx':'')})}catch(e){}return r};
+var _pg14f=phGo;phGo=function(i){if(S.turn==1&&i==3)return toast('No Battle Phase on the first turn');return _pg14f(i)};
 </script></body></html>
