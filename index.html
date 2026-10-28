@@ -1938,6 +1938,65 @@ fxCover=function(){var tot=0,ok=0,un=[],by={},bad={};CARDS.forEach(function(c){v
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*@@v17a.js*//* v17a: event hub + per-card handler table (HK) + Union/Gemini/Spirit/Toon/control systems */
 var HK={};function hk(n){return HK[lc(n||'')]}
 function up(c){return c&&c.pos!='DOWN'&&c.pos!='SET'}
@@ -2581,6 +2640,65 @@ var _tp17h=tribPick;tribPick=function(need,cb,minLv,ex){if(minLv&&ex&&/Ritual/.t
 function wdjat(q){var o=oth(q),k=STs(o).filter(function(z){var s=S[o].z[z];return s&&(s.pos=='SET'||s.pos=='DOWN')})[0]||mons(o).filter(function(z){return S[o].z[z].pos=='DOWN'})[0];if(!k)return;var s=S[o].z[k];s.seen=q;S.reveal={q:o,z:k,n:s.name,t:S.turn,by:q};L('A Man with Wdjat looks at '+o+' '+k+': '+s.name);try{if(q=='ME'&&typeof toast=='function')toast('Wdjat reveals: '+s.name)}catch(e){}}
 hkSet('A Man with Wdjat',{sum:function(q,z,c,x){if(x.ns)wdjat(q)},standby:function(q,z,c,x){if(x.p==q)wdjat(q)}});
 /*@@end v17h.js*/
+/*@@v17i.js*/// v17i: official summon/phase limits, Double Summon, CPU turn robustness, difficulty + learning
+(function(){
+var NSRE=/^(NA|NS|TA|TS)$/;
+window.nsAllow17=function(p){var x=S.nsx||{};return x[p]&&x[p].t==S.turn?1+x[p].n:1};
+window.nsUsed17=function(p){var c=S.nsc||{};return c[p]&&c[p].t==S.turn?c[p].n:(S.ns&&S.ns[p]==S.turn?1:0)};
+function nsBump(p){S.nsc=S.nsc||{};var c=S.nsc[p];if(!c||c.t!=S.turn)c=S.nsc[p]={t:S.turn,n:0};c.n++;S.ns=S.ns||{};S.ns[p]=S.turn}
+window.isQP17=function(n){return /Quick-Play/.test(cd(n)[1]||'')};
+// --- menu grey-outs
+var _lo17i=legalOpts;legalOpts=function(p,n){var O=_lo17i.apply(this,arguments),mine=tp()==p,main=isMain(),ty=cd(n)[1]||'';
+ var ex=mine&&main&&nsUsed17(p)<nsAllow17(p);
+ O.forEach(function(o){var k=o.k||'';
+  if(NSRE.test(k)){
+   if(mine&&!main)o.dis='Only in Main Phase';
+   else if(mine&&nsUsed17(p)>=nsAllow17(p))o.dis='Already Normal Summoned this turn';
+   else if(ex&&/already used|Already Normal/.test(o.dis||'')){var s=S.ns[p];S.ns[p]=-1;try{var o2=_lo17i(p,n).filter(function(q){return q.k==k})[0];o.dis=o2?o2.dis:''}finally{S.ns[p]=s}}}
+  else if(mine&&!main&&!o.dis){
+   if(k=='SS'||k=='FS'||k=='FA'||(/Spell/.test(ty)&&!isQP17(n)&&/^(SA|EQ|FU|MR|RX|PB)$/.test(k))||(/Trap/.test(ty)&&/S/.test(k)))o.dis='Only in Main Phase'}});
+ O.forEach(function(o){if(/Main Phase/.test(o.dis||''))o.dis='Only in Main Phase'});return O};
+// --- hard enforcement in place()
+var _pl17i=place;place=function(p,k,name,pos,atk,def,forced){var old=S[p].z[k],T=S.turn;
+ if(k&&k[0]=='M'&&!forced&&name&&isMon(name)&&(pos=='ATK'||pos=='DOWN')){
+  if(!old||old.name!=name){ // Normal Summon / Set / Tribute
+   if(!isMain())return 'Only in Main Phase';
+   var u=nsUsed17(p);if(u>=nsAllow17(p))return 'Already Normal Summoned this turn';
+   S.ns=S.ns||{};var sv=S.ns[p];if(u>0)S.ns[p]=-1;var r=_pl17i.apply(this,arguments);
+   if(typeof r=='string'&&r){S.ns[p]=sv;return r}if(r===false){S.ns[p]=sv;return r}nsBump(p);return r}
+  if(old.pos=='DOWN'&&pos=='ATK'&&!isMain())return 'Only in Main Phase'}
+ if(k&&k[0]=='M'&&!forced&&old&&old.name==name&&old.pos!=pos&&old.pos!='DOWN'&&tp()==p&&!isMain())return 'Only in Main Phase';
+ return _pl17i.apply(this,arguments)};
+// --- Double Summon: real effect (+1 Normal Summon this turn)
+try{if(typeof SPELLFX!='undefined')0}catch(e){}
+window.dblSummon17=function(p){S.nsx=S.nsx||{};var x=S.nsx[p];if(!x||x.t!=S.turn)x=S.nsx[p]={t:S.turn,n:0};x.n++;L(p+' Double Summon: may Normal Summon/Set 1 more time this turn')};
+var _ua17i=useH;useH=function(p,n){var r=_ua17i.apply(this,arguments);return r};
+var _tg17i=toGY;toGY=function(p,z){var c=S[p]&&S[p].z[z];if(c&&lc(c.name)=='double summon'&&c.pos=='UP'&&!c.dsx){c.dsx=1;dblSummon17(p)}return _tg17i.apply(this,arguments)};
+// --- CPU: Main Phase for its plays, never stall, never skip legal summon
+window.LEARN17=(function(){try{return JSON.parse(localStorage.getItem('ygoLearn17')||'{}')}catch(e){return{}}})();
+function lk(){var n=(typeof NAMES!='undefined'&&NAMES.OPP)||'CPU';return LEARN17[n]=LEARN17[n]||{atk:0,trap:0}}
+window.learnSave17=function(){try{localStorage.setItem('ygoLearn17',JSON.stringify(LEARN17))}catch(e){}};
+window.diff17=function(){return (typeof SET15!='undefined'&&SET15.diff)||'Normal'};
+var _cs17i=cpuSpells;cpuSpells=function(done){if(tp()=='OPP'&&S.phase<2)S.phase=2;return _cs17i.apply(this,arguments)};
+var _ai17i=aiTurn;aiTurn=function(p){var r,T=S.turn;try{r=_ai17i.apply(this,arguments)}catch(e){try{L(p+' AI error: '+e.message)}catch(x){}}
+ try{if(S.ns&&S.ns[p]==T&&!(S.nsc&&S.nsc[p]&&S.nsc[p].t==T))nsBump(p)}catch(e){}
+ try{if(CPUQ){var d=diff17(),A=CPUQ.filter(function(e){return e.t=='atk'}),st=Object.keys(S[oth(p)].z).filter(function(z){return z[0]=='S'&&S[oth(p)].z[z].pos=='SET'}).length,L0=lk();
+  if(d=='Easy')CPUQ=CPUQ.filter(function(e){return e.t!='atk'||Math.random()>.2});
+  else if(st&&L0.atk>=3&&L0.trap/L0.atk>=.4&&A.length>1){ // learned: Mike punishes attacks -> bait with weakest attacker first
+   A.sort(function(a,b){return (+S[p].z[a.az].atk||0)-(+S[p].z[b.az].atk||0)});var i=0;CPUQ=CPUQ.map(function(e){return e.t=='atk'?A[i++]:e})}}}catch(e){}
+ return r};
+var _ch17i=chainStart;chainStart=function(l0,done){if(l0&&l0.type=='attack'&&l0.p=='OPP'&&!CHAIN){var L0=lk();L0.atk++;var d0=done;done=function(){try{if(CHAIN0&&CHAIN0.l.some(function(x){return x.p=='ME'}))L0.trap++;learnSave17()}catch(e){}d0&&d0.apply(this,arguments)};var r=_ch17i.call(this,l0,done);CHAIN0=CHAIN;return r}return _ch17i.apply(this,arguments)};
+var CHAIN0=null;
+if(typeof reset=='function'){var _rs17i=reset;reset=function(){CPUBUSY=0;return _rs17i.apply(this,arguments)}}
+if(typeof startDuel=='function'){var _sd17i=startDuel;startDuel=function(){CPUBUSY=0;return _sd17i.apply(this,arguments)}}
+})();
+// opponent cards: face-up -> only "View card"; face-down/empty -> nothing
+(function(){var _od17i=openD;openD=function(p,k){if(p!='OPP'||openD._go||(typeof PICK!='undefined'&&PICK))return _od17i.apply(this,arguments);
+ var c=S.OPP.z[k];if(!c||!vwOK('OPP',c))return;
+ ov('<h2 style="margin:4px">'+esc(c.name)+'</h2><button class="big" id="vw17" onclick="ovClose();VZ(\'OPP\',\''+k+'\')">&#128269; View card</button>')};
+ var _zv17i=zoneView;zoneView=function(p,k){var r=_zv17i.apply(this,arguments);try{var a=(k=='BAN'?(S[p].BAN||[]):S[p].GY).slice().reverse();
+  [].forEach.call(document.querySelectorAll('.gyv .gyc'),function(e,i){e.style.cursor='pointer';e.onclick=function(){ovClose();VC(a,i)}})}catch(e){}return r}})();
+/*@@end v17i.js*/
 /*@@v17z.js*/K({'Alien Psychic':{alienpsy:1},'Darklord Nurse Reficule':{revGain:1}});
 Object.keys(HK).forEach(function(n){var h=HK[n];if(h.union&&!h.ign)h.ign=function(p,k){k[0]=='M'?unionEq(p,k):unionOff(p,k)};
  if(h.gem){var g2=h.ign;h.ign=function(p,k,c){if(c.gemi===0){c.gemi=1;L(c.name+' is Gemini Summoned')}else if(g2)g2(p,k,c)}}});
