@@ -2251,6 +2251,141 @@ fxCover=function(){var tot=0,ok=0,un=[],by={},bad={};CARDS.forEach(function(c){v
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*@@v17a.js*//* v17a: event hub + per-card handler table (HK) + Union/Gemini/Spirit/Toon/control systems */
 var HK={};function hk(n){return HK[lc(n||'')]}
 function up(c){return c&&c.pos!='DOWN'&&c.pos!='SET'}
@@ -3191,6 +3326,81 @@ var IV17o=setInterval(function(){var o=document.getElementById('ovx');document.b
 '@keyframes rx17p{0%{transform:rotate(var(--a)) translate(0);opacity:1}100%{transform:rotate(var(--a)) translate(var(--d));opacity:0}}@keyframes rx17t{0%,20%{opacity:0;transform:scale(.5)}35%{opacity:1;transform:scale(1.2)}85%{opacity:1;transform:scale(1)}100%{opacity:0}}';
 (document.head||document.documentElement||document.body).appendChild(s)})();
 /*@@end v17o.js*/
+/*@@v17p.js*//* ===== v17p: single draw per turn (turn-1 skip), opp View card art, menu on load ===== */
+// Cause: during the coin toss the old S.first made tp()=='ME' on turn 1, so the render hook drew for Mike
+// while the rival also drew on its own turn 1. Ledger S.drw17[turn] ensures exactly one draw by the turn player.
+var _sd17p=startDuel;startDuel=function(){S.drw17={};return _sd17p.apply(this,arguments)};
+var _ct17p=coinToss;coinToss=function(cb){return _ct17p(function(){S.drw17={};S.dr=1;cb&&cb()})};
+function canDraw17(p){S.drw17=S.drw17||{};if(tp()!=p||S.drw17[S.turn])return false;
+ if(S.turn==1){S.drw17[1]=p;if(p=='ME')S.dr=1;L('T1 '+(p=='ME'?'Mike':NAMES.OPP)+' goes first - no draw');return false}return true}
+var _md17p=meDrawPhase;meDrawPhase=function(){if(S.dr==S.turn||PHT)return;if(!canDraw17('ME')){if(S.turn==1){S.dr=1;S.phase=Math.max(S.phase,2);save()}return}
+ var h=M.hand.length;_md17p();if(M.hand.length>h)S.drw17[S.turn]='ME'};
+var _dp17p=_drawP15;_drawP15=function(p,n){if(p=='OPP'&&n==1&&new Error().stack.indexOf('cpuTurn')>=0){if(!canDraw17('OPP')){SK17=1;return}S.drw17[S.turn]='OPP'}return _dp17p.apply(this,arguments)};
+// opponent face-up card viewer: same art viewer as Mike's cards
+VZ=function(p,k){var c=S[p].z[k];if(!c)return;var x=nix(c.name);if(x!=null)vzoom([x,c.r!=null?c.r:hrar(c.name)]);else VC([c],0)};
+// always open on the main menu; Continue only when a save exists
+if(typeof document!='undefined'){setTimeout(function(){try{if(PRO.mode&&document.getElementById('mode').style.display!='flex')showMode()}catch(e){}},60)}
+var _sm17p=showMode;showMode=function(){var r=_sm17p.apply(this,arguments);try{var b=document.querySelector('#mmx button[onclick="resumeDuel()"]');if(b)b.innerHTML='▶ CONTINUE<br><small>Turn '+S.turn+' • LP '+S.ME.LP+' vs '+S.OPP.LP+'</small>'}catch(e){}return r};
+var SK17=0,_L17p=L;L=function(m){if(SK17&&m=='OPP draws 1 card')return;return _L17p.apply(this,arguments)};
+var _ofx17p=oppDrawFx;oppDrawFx=function(){if(SK17)return;return _ofx17p.apply(this,arguments)};
+var _to17p=toast;toast=function(m){if(SK17&&/ draws$/.test(m)){SK17=0;return}return _to17p.apply(this,arguments)};
+// discard prompts: real card images laid out like the hand; tap = select, View = large viewer, Discard = confirm
+var _pl17p=pmList;pmList=function(title,items,cb){if(typeof document=='undefined'||!/discard/i.test(title)||!items.length||!items.every(function(it){return it.i!=null&&M.hand[it.i]===it.t}))return _pl17p.apply(this,arguments);
+ var z=pmEl(),sel=-1;z.classList.add('dc17');z.onclick=null;
+ z.innerHTML='<h3>'+esc(title)+'</h3><div class="hrow dc17h">'+items.map(function(it,k){var n=it.t,x=nix(n);return'<div class="hcw" data-k="'+k+'">'+(x!=null?rcard(x,hrar(n,M.hand.slice(0,it.i).filter(function(q){return q==n}).length)):'<div class="rc rc-no"><div class="rcn"><span>'+esc(n)+'</span></div></div>')+'</div>'}).join('')+
+ '</div><div class="dc17b"><button class="big" id="dc17v" disabled>&#128269; View</button><button class="big" id="dc17d" disabled>Discard</button></div>';
+ var W=z.querySelectorAll('.dc17h .hcw'),V=document.getElementById('dc17v'),D=document.getElementById('dc17d');
+ [].forEach.call(W,function(w){w.onclick=function(){sel=+w.dataset.k;[].forEach.call(W,function(q){q.classList.toggle('on17',q===w)});V.disabled=D.disabled=false;D.textContent='Discard '+items[sel].t}});
+ V.onclick=function(){if(sel<0)return;var n=items[sel].t,x=nix(n);if(x!=null)vzoom([x,hrar(n)]);else VC([n],0)};
+ D.onclick=function(){if(sel<0)return;z.classList.remove('dc17');cb(items[sel])}};
+var _pc17p=pmClose;pmClose=function(){try{var z=document.querySelector('.dc17');if(z)z.classList.remove('dc17');var m=document.getElementById('pm');if(m&&!m.onclick)m.onclick=function(v){if(v.target===m)pmClose()}}catch(e){}return _pc17p.apply(this,arguments)};
+if(typeof document!='undefined'&&document.head){var st17p=document.createElement('style');st17p.textContent='.dc17{max-height:92vh;overflow:auto}.dc17h{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}.dc17h .hcw{cursor:pointer;border-radius:8px;outline:3px solid transparent;transition:transform .15s}.dc17h .hcw.on17{outline-color:#ff4a4a;transform:translateY(-8px)}.dc17b{display:flex;gap:8px;justify-content:center}.dc17b button:disabled{opacity:.45}#vz{z-index:100000}';document.head.appendChild(st17p)}
+// detailed SVG card back (drawn once, cached as a data-URI CSS variable), used for every card back
+var CB17=(function(){var sp='',i,a,r,pts;for(i=0;i<36;i++){pts=[];for(var t=0;t<=40;t++){a=i*10*Math.PI/180+t*0.11;r=3+t*1.05;pts.push((50+r*Math.cos(a)*0.82).toFixed(1)+','+(73+r*Math.sin(a)*1.12).toFixed(1))}
+  sp+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+(i%3==0?'#8a4a1a':i%3==1?'#3a1806':'#5e2c0c')+'" stroke-width="'+(i%2?2.2:1.2)+'" opacity="'+(i%2?.9:.7)+'"/>'}
+ var s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 146" preserveAspectRatio="none"><defs>'+
+ '<linearGradient id="fr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a4a22"/><stop offset=".25" stop-color="#2a1406"/><stop offset=".5" stop-color="#6b3a16"/><stop offset=".75" stop-color="#1e0e04"/><stop offset="1" stop-color="#5a3010"/></linearGradient>'+
+ '<radialGradient id="bg" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#4a220a"/><stop offset=".6" stop-color="#1c0c03"/><stop offset="1" stop-color="#070301"/></radialGradient>'+
+ '<radialGradient id="ov" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".35" stop-color="#f0a83a"/><stop offset=".75" stop-color="#c06a14"/><stop offset="1" stop-color="#6a3006"/></radialGradient>'+
+ '<radialGradient id="ic" cx=".5" cy=".45" r=".6"><stop offset="0" stop-color="#3a1a06"/><stop offset=".7" stop-color="#0c0602"/><stop offset="1" stop-color="#000"/></radialGradient>'+
+ '<linearGradient id="sh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity=".1"/><stop offset=".85" stop-color="#fff" stop-opacity="0"/></linearGradient>'+
+ '<pattern id="tx" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="3" fill="#000" opacity="0"/><circle cx="1" cy="1" r=".45" fill="#fff" opacity=".07"/></pattern>'+
+ '<clipPath id="cp"><rect x="6" y="6" width="88" height="134" rx="2"/></clipPath></defs>'+
+ '<rect width="100" height="146" rx="4" fill="url(#fr)"/><rect x="1.5" y="1.5" width="97" height="143" rx="3.5" fill="none" stroke="#b07a3a" stroke-width="1" opacity=".8"/>'+
+ '<rect x="4" y="4" width="92" height="138" rx="2.5" fill="none" stroke="#120802" stroke-width="2"/><rect x="5.6" y="5.6" width="88.8" height="134.8" rx="2" fill="none" stroke="#a8743a" stroke-width=".7"/>'+
+ '<g clip-path="url(#cp)"><rect x="6" y="6" width="88" height="134" fill="url(#bg)"/>'+sp+'<rect x="6" y="6" width="88" height="134" fill="url(#tx)"/></g>'+
+ '<ellipse cx="50" cy="73" rx="24" ry="33" fill="#1a0a02" opacity=".6"/><ellipse cx="50" cy="73" rx="22" ry="31" fill="url(#ov)" stroke="#5a2a06" stroke-width="1"/>'+
+ '<ellipse cx="50" cy="73" rx="16" ry="24" fill="url(#ic)" stroke="#ffd27a" stroke-width=".8"/><ellipse cx="45" cy="62" rx="7" ry="4" fill="#fff" opacity=".18" transform="rotate(-25 45 62)"/>'+
+ '<ellipse cx="44" cy="58" rx="12" ry="5" fill="#fff" opacity=".22" transform="rotate(-30 44 58)"/>'+
+ '<rect width="100" height="146" rx="4" fill="url(#sh)"/></svg>';
+ return 'url("data:image/svg+xml;base64,'+(typeof btoa=='function'?btoa(s):Buffer.from(s).toString('base64'))+'")'})();
+if(typeof document!='undefined'&&document.head){document.documentElement.style.setProperty('--cb17',CB17);var st17b=document.createElement('style');
+ st17b.textContent='.cback{background:var(--cb17) center/100% 100% no-repeat!important;border:none!important;box-shadow:0 1px 4px #000}.cback>i{display:none!important}'+
+ '.z.down{background:var(--cb17) center/100% 100% no-repeat!important;border-color:#1a0a02!important;text-shadow:0 0 3px #000,0 0 6px #000}'+
+ '.ohand i{background:var(--cb17) center/100% 100% no-repeat!important;border:none!important}.pc .a{background:var(--cb17) center/100% 100% no-repeat!important}';document.head.appendChild(st17b)}
+// ===== one shared real-card renderer for every UI path =====
+function RC17(n,r){var x=typeof n=='number'?n:nix(n);if(x==null){var k=(n||'').toLowerCase(),j=-1;for(var q=0;q<CARDS.length;q++)if(CARDS[q][0].toLowerCase()==k){j=q;break}x=j<0?null:j}
+ if(x==null)return '<div class="rc rc-sp fr0"><div class="rcn"><span>'+esc(n)+'</span></div><div class="rca"><b class="rcf">'+esc(n)+'</b></div></div>';
+ return rcard(x,r!=null?r:(typeof n=='string'?hrar(n):0))}
+// big viewer: real card instead of the drawn text frame
+var _vcR17p=vcR;vcR=function(){_vcR17p.apply(this,arguments);try{var e=document.getElementById('vc'),it=VL[VI],c=e.querySelector('.vcc');if(c&&it){var d=document.createElement('div');d.className='vcc17';d.innerHTML=RC17(it.name,it.r);c.parentNode.replaceChild(d,c)}}catch(x){}};
+// graveyard / banished lists
+var _zv17p=zoneView;zoneView=function(p,k){var r=_zv17p.apply(this,arguments);try{var a=(k=='BAN'?(S[p].BAN||[]):S[p].GY).slice().reverse();[].forEach.call(document.querySelectorAll('.gyv .gyc'),function(g,i){if(!g.querySelector('.rca img')&&a[i])g.innerHTML=RC17(a[i])})}catch(x){}return r};
+// target pickers / response lists whose options are cards -> real card grid (tap select, View, confirm)
+var _pl17q=pmList;pmList=function(title,items,cb){var ok=typeof document!='undefined'&&items.length&&!/discard/i.test(title)&&items.every(function(it){return it&&typeof it.t=='string'&&nix(it.t.replace(/ \((ATK|DEF|set|face-down)[^)]*\)$/i,''))!=null});
+ if(!ok)return _pl17q.apply(this,arguments);
+ var z=pmEl(),sel=-1;z.innerHTML='<h3>'+esc(title)+'</h3><div class="hrow dc17h">'+items.map(function(it,k){var n=it.t.replace(/ \((ATK|DEF|set|face-down)[^)]*\)$/i,'');return'<div class="hcw'+(it.dis?' dis17':'')+'" data-k="'+k+'">'+RC17(n)+(it.s||it.dis?'<small class="pk17s">'+esc(it.dis||it.s)+'</small>':'')+'</div>'}).join('')+
+ '</div><div class="dc17b"><button class="big" id="pk17v" disabled>&#128269; View</button><button class="big" id="pk17o" disabled>Choose</button><button class="big cx" id="plc">Cancel</button></div>';
+ var W=z.querySelectorAll('.dc17h .hcw'),V=document.getElementById('pk17v'),O=document.getElementById('pk17o');
+ [].forEach.call(W,function(w){w.onclick=function(){var it=items[+w.dataset.k];if(it.dis)return;sel=+w.dataset.k;[].forEach.call(W,function(q){q.classList.toggle('on17',q===w)});V.disabled=O.disabled=false}});
+ V.onclick=function(){if(sel>=0){var n=items[sel].t.replace(/ \((ATK|DEF|set|face-down)[^)]*\)$/i,'');vzoom([nix(n),hrar(n)])}};O.onclick=function(){if(sel>=0)cb(items[sel])};document.getElementById('plc').onclick=pmClose};
+if(typeof document!='undefined'&&document.head){var st17c=document.createElement('style');st17c.textContent='.vcc17{width:min(78vw,340px);margin:0 auto}.vcc17 .rc{width:100%!important;height:auto!important;aspect-ratio:59/86}.dis17{opacity:.4}.pk17s{display:block;font-size:10px;text-align:center;max-width:100px}';document.head.appendChild(st17c)}
+// GY zone shows its top card as the real card; deck-edit rows get a real-card thumbnail
+var _re17p=render;render=function(){var r=_re17p.apply(this,arguments);try{if(typeof document=='undefined')return r;['ME','OPP'].forEach(function(p){var z=document.querySelector('.z[onclick="showGY(\''+p+'\')"]'),g=S[p].GY||[];if(!z)return;var t=g[g.length-1];
+ if(t&&z.dataset.t17!==t+g.length){z.dataset.t17=t+g.length;z.innerHTML='<span class="lb">GY</span><div class="zc gy17">'+RC17(t)+'</div><b class="gyn17">'+g.length+'</b>'}else if(!t&&z.dataset.t17){z.dataset.t17='';z.innerHTML='<span class="lb">GY</span>Graveyard<br>(0)'}})}catch(e){}return r};
+if(typeof document!='undefined'&&document.head){new MutationObserver(function(){[].forEach.call(document.querySelectorAll('.de17r:not([data-t17])'),function(w){w.dataset.t17=1;var n=w.dataset.n,s=document.createElement('span');s.className='th17';s.innerHTML=RC17(n);var k=w.querySelector('.k');if(k)k.replaceWith(s);else w.insertBefore(s,w.firstChild)})}).observe(document.documentElement,{childList:true,subtree:true});
+ var st17d=document.createElement('style');st17d.textContent='.th17{flex:0 0 auto;width:40px;height:58px;display:block;overflow:hidden;position:relative}.th17 .rc{width:100px!important;height:146px!important;max-width:none!important;transform:scale(.4);transform-origin:0 0;position:absolute;left:0;top:0;pointer-events:none}.gy17{pointer-events:none}.gyn17{position:absolute;right:2px;bottom:2px;background:#000c;color:#fff;border-radius:6px;padding:0 5px;font-size:11px}';document.head.appendChild(st17d)}
+/*@@end v17p.js*/
 /*@@v17z.js*/K({'Alien Psychic':{alienpsy:1},'Darklord Nurse Reficule':{revGain:1}});
 Object.keys(HK).forEach(function(n){var h=HK[n];if(h.union&&!h.ign)h.ign=function(p,k){k[0]=='M'?unionEq(p,k):unionOff(p,k)};
  if(h.gem){var g2=h.ign;h.ign=function(p,k,c){if(c.gemi===0){c.gemi=1;L(c.name+' is Gemini Summoned')}else if(g2)g2(p,k,c)}}});
